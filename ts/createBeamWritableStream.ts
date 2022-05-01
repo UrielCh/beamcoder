@@ -20,9 +20,9 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 import { Writable } from 'stream';
-import type { Governor } from './types/Governor';
+import { governor } from './types/governor';
 
-export default function createBeamWritableStream(params: { highwaterMark?: number }, governor: Governor): Writable {
+export default function createBeamWritableStream(params: { highwaterMark?: number }, governor: governor): Writable {
     const beamStream = new Writable({
       highWaterMark: params.highwaterMark || 16384,
       write: (chunk, encoding, cb) => {

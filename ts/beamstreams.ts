@@ -19,105 +19,18 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-import bindings from 'bindings';
+import beamcoder from './beamcoder'
 import calcStats from './calcStats';
 import createBeamReadableStream from './createBeamReadableStream';
 import createBeamWritableStream from './createBeamWritableStream';
 import teeBalancer from './teeBalancer';
 import transformStream from './transformStream';
-//import { BeamcoderType } from './types/BeamcoderType';
-
-const beamcoder = bindings('beamcoder') as any;// BeamcoderType;
-
-import { Writable, Readable, Transform } from 'stream';
+import { Writable, Readable } from 'stream';
 import { BeamstreamParams, ReadableMuxerStream, WritableDemuxerStream } from './types';
+import frameDicer from './frameDicer';
 
 const doTimings = false;
 const timings = [];
-
-function frameDicer(encoder, isAudio) {
-  let sampleBytes = 4; // Assume floating point 4 byte samples for now...
-  const numChannels = encoder.channels;
-  const dstNumSamples = encoder.frame_size;
-  let dstFrmBytes = dstNumSamples * sampleBytes;
-  const doDice = false === beamcoder.encoders()[encoder.name].capabilities.VARIABLE_FRAME_SIZE;
-
-  let lastFrm = null;
-  let lastBuf = [];
-  const nullBuf = [];
-  for (let b = 0; b < numChannels; ++b)
-    nullBuf.push(Buffer.alloc(0));
-
-  const addFrame = srcFrm => {
-    let result = [];
-    let dstFrm;
-    let curStart = 0;
-    if (!lastFrm) {
-      lastFrm = beamcoder.frame(srcFrm.toJSON());
-      lastBuf = nullBuf;
-      dstFrmBytes = dstNumSamples * sampleBytes;
-    }
-
-    if (lastBuf[0].length > 0)
-      dstFrm = beamcoder.frame(lastFrm.toJSON());
-    else
-      dstFrm = beamcoder.frame(srcFrm.toJSON());
-    dstFrm.nb_samples = dstNumSamples;
-    dstFrm.pkt_duration = dstNumSamples;
-
-    while (curStart + dstFrmBytes - lastBuf[0].length <= srcFrm.nb_samples * sampleBytes) {
-      const resFrm = beamcoder.frame(dstFrm.toJSON());
-      resFrm.data = lastBuf.map((d, i) => 
-        Buffer.concat([
-          d, srcFrm.data[i].slice(curStart, curStart + dstFrmBytes - d.length)],
-        dstFrmBytes));
-      result.push(resFrm);
-
-      dstFrm.pts += dstNumSamples;
-      dstFrm.pkt_dts += dstNumSamples;
-      curStart += dstFrmBytes - lastBuf[0].length;
-      lastFrm.pts = 0;
-      lastFrm.pkt_dts = 0;
-      lastBuf = nullBuf;
-    }
-
-    lastFrm.pts = dstFrm.pts;
-    lastFrm.pkt_dts = dstFrm.pkt_dts;
-    lastBuf = srcFrm.data.map(d => d.slice(curStart, srcFrm.nb_samples * sampleBytes));
-
-    return result;
-  };
-
-  const getLast = () => {
-    let result = [];
-    if (lastBuf[0].length > 0) {
-      const resFrm = beamcoder.frame(lastFrm.toJSON());
-      resFrm.data = lastBuf.map(d => d.slice(0));
-      resFrm.nb_samples = lastBuf[0].length / sampleBytes;
-      resFrm.pkt_duration = resFrm.nb_samples;
-      lastFrm.pts = 0;
-      lastBuf = nullBuf;
-      result.push(resFrm);
-    }
-    return result;
-  };
-
-  this.dice = (frames, flush = false) => {
-    if (isAudio && doDice) {
-      let result = frames.reduce((muxFrms, frm) => {
-        addFrame(frm).forEach(f => muxFrms.push(f));
-        return muxFrms;
-      }, []);
-  
-      if (flush)
-        getLast().forEach(f => result.push(f));
-  
-      return result;
-    }
-  
-    return frames;
-  };
-}
 
 function serialBalancer(numStreams) {
   let pending = [];
@@ -414,7 +327,7 @@ function runStreams(streamType, sources, filterer, streams, mux, muxBalancer) {
     filterBalancer.pipe(filtStream).pipe(streamSource);
 
     streams.forEach((str, i) => {
-      const dicer = new frameDicer(str.encoder, 'audio' === streamType);
+      const dicer: any = new frameDicer(str.encoder, 'audio' === streamType);
       const diceStream = transformStream({ name: 'dice', highWaterMark : 1 },
         frms => dicer.dice(frms), () => dicer.dice([], true), reject);
       const encStream = transformStream({ name: 'encode', highWaterMark : 1 },

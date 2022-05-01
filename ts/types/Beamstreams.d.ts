@@ -43,11 +43,11 @@ export interface ReadableMuxerStream extends NodeJS.ReadableStream {
 export function muxerStream(params: { highwaterMark?: number }): ReadableMuxerStream
 
 /** Create object for AVIOContext based buffered I/O */
-export function governor(options: { highWaterMark: number }): {
-  read(len: number): Promise<Buffer>
-  write(data: Buffer): Promise<null>
-  finish(): undefined
-}
+// export function governor(options: { highWaterMark: number }): {
+//   read(len: number): Promise<Buffer>
+//   write(data: Buffer): Promise<null>
+//   finish(): undefined
+// }
 
 /** Source definition for a beamstream channel, from either a file or NodeJS ReadableStream */
 export interface BeamstreamSource {
