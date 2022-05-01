@@ -73,3 +73,4 @@ ffmpeg/
 # Editors and IDE's
 *.swp
 .vscode/
+scratch/wibble.h264

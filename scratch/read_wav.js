@@ -22,11 +22,11 @@
 const beamcoder = require('../index.js');
 
 async function run() {
-  let demuxer = await beamcoder.demuxer('../media/sound/BBCNewsCountdown.wav');
+  let demuxer = await beamcoder.demuxer('../../media/sound/BBCNewsCountdown.wav');
   let packet = {};
   for ( let x = 0 ; x < 100 && packet !== null ; x++ ) {
     packet = await demuxer.read();
-    console.log(x, packet);
+    console.log(x, JSON.stringify(packet));
   }
   console.log(await demuxer.seek({ frame : 120 }));
   console.log(await demuxer.read());

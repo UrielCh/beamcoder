@@ -20,8 +20,14 @@
 */
 
 const beamcoder = require('../index.js');
+const md5File = require('md5-file');
 
 async function run() {
+  const sumSrc = await md5File('../../Media/big_buck_bunny_1080p_h264.mov');
+
+  if (sumSrc !== 'c23ab2ff12023c684f46fcc02c57b585')
+    throw ('invalid Src md5');
+
   const urls = [ 'file:../../Media/big_buck_bunny_1080p_h264.mov' ];
   const spec = { start: 0, end: 24 };
 
@@ -68,6 +74,10 @@ async function run() {
   const beamStreams = await beamcoder.makeStreams(params);
 
   await beamStreams.run();
+
+  const sumDest = await md5File('temp.mp4');
+  if (sumDest !== 'f08742dd1982073c2eb01ba6faf86d63')
+    throw ('invalid Src md5, get: ', sumDest);
 }
 
 console.log('Running mp4 maker');
