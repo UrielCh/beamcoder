@@ -24,6 +24,7 @@ import calcStats from './calcStats';
 import createBeamReadableStream from './createBeamReadableStream';
 import createBeamWritableStream from './createBeamWritableStream';
 import teeBalancer from './teeBalancer';
+import transformStream from './transformStream';
 //import { BeamcoderType } from './types/BeamcoderType';
 
 const beamcoder = bindings('beamcoder') as any;// BeamcoderType;
@@ -229,31 +230,6 @@ function parallelBalancer(params, streamType, numStreams) {
   };
 
   return readStream;
-}
-
-function transformStream(params, processFn, flushFn, reject) {
-  return new Transform({
-    objectMode: true,
-    highWaterMark: params.highWaterMark ? params.highWaterMark || 4 : 4,
-    transform(val, encoding, cb) {
-      (async () => {
-        const start = process.hrtime();
-        const reqTime = start[0] * 1e3 + start[1] / 1e6;
-        const result = await processFn(val);
-        result.timings = val.timings;
-        if (result.timings)
-          result.timings[params.name] = { reqTime: reqTime, elapsed: process.hrtime(start)[1] / 1000000 };
-        cb(null, result);
-      })().catch(cb);
-    },
-    flush(cb) {
-      (async () => {
-        const result = flushFn ? await flushFn() : null;
-        if (result) result.timings = {};
-        cb(null, result);
-      })().catch(cb);
-    }
-  }).on('error', err => reject(err));
 }
 
 function writeStream(params, processFn, finalFn, reject) {
