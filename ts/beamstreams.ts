@@ -27,45 +27,8 @@ import { BeamstreamParams } from './types';
 import frameDicer from './frameDicer';
 import writeStream from './writeStream';
 import readStream from './readStream';
+import serialBalancer from './serialBalancer';
 
-function serialBalancer(numStreams) {
-  let pending = [];
-  // initialise with negative ts and no pkt
-  // - there should be no output until each stream has sent its first packet
-  for (let s = 0; s < numStreams; ++s)
-    pending.push({ ts: -Number.MAX_VALUE, streamIndex: s });
-
-  const adjustTS = (pkt, srcTB, dstTB) => {
-    const adj = (srcTB[0] * dstTB[1]) / (srcTB[1] * dstTB[0]);
-    pkt.pts = Math.round(pkt.pts * adj);
-    pkt.dts = Math.round(pkt.dts * adj);
-    pkt.duration > 0 ? Math.round(pkt.duration * adj) : Math.round(adj);
-  };
-    
-  const pullPkts = (pkt, streamIndex, ts) => {
-    return new Promise(resolve => {
-      Object.assign(pending[streamIndex], { pkt: pkt, ts: ts, resolve: resolve });
-      const minTS = pending.reduce((acc, pend) => Math.min(acc, pend.ts), Number.MAX_VALUE);
-      // console.log(streamIndex, pending.map(p => p.ts), minTS);
-      const nextPend = pending.find(pend => pend.pkt && (pend.ts === minTS));
-      if (nextPend) nextPend.resolve(nextPend.pkt);
-      if (!pkt) resolve(undefined);
-    });
-  };
-
-  this.writePkts = (packets, srcStream, dstStream, writeFn, final = false) => {
-    if (packets && packets.packets.length) {
-      return packets.packets.reduce(async (promise, pkt) => {
-        await promise;
-        pkt.stream_index = dstStream.index;
-        adjustTS(pkt, srcStream.time_base, dstStream.time_base);
-        const pktTS = pkt.pts * dstStream.time_base[0] / dstStream.time_base[1];
-        return writeFn(await pullPkts(pkt, dstStream.index, pktTS));
-      }, Promise.resolve());
-    } else if (final)
-      return pullPkts(null, dstStream.index, Number.MAX_VALUE);
-  };
-}
 
 function parallelBalancer(params, streamType, numStreams) {
   let resolveGet = null;
