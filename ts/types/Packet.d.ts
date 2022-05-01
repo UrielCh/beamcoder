@@ -1,3 +1,5 @@
+import { Timable, toJSONAble } from "./time"
+
 /**
  * This object stores compressed data. It is typically exported by demuxers
  * and then passed as input to decoders, or received as output from encoders and
@@ -8,7 +10,7 @@
  * packets, with no compressed data, containing only side data
  * (e.g. to update some stream parameters at the end of encoding).
  */
-export interface Packet {
+export interface Packet extends Timable, toJSONAble {
 	/** Object name. */
 	readonly type: 'Packet'
 	/**
@@ -47,7 +49,7 @@ export interface Packet {
 		 * decoder state but are not required for output and should be dropped
 		 * after decoding.
 		 **/
-    DISCARD: boolean
+        DISCARD: boolean
 		/**
 		 * The packet comes from a trusted source.
 		 *
