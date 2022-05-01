@@ -1,9 +1,10 @@
 import { HWFramesContext } from "./HWContext";
+import { Timable } from "./time";
 
 /**
  * This object describes decoded (raw) audio or video data.
  */
-export interface Frame {
+export interface Frame extends Timable {
 	/** Object name. */
 	readonly type: 'Frame'
 	/**
