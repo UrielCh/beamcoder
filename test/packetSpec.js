@@ -20,7 +20,7 @@
 */
 
 const test = require('tape');
-const beamcoder = require('../index.js');
+const beamcoder = require('../ts');
 
 test('Create a packet', t => {
   let pkt = beamcoder.packet();

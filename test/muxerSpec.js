@@ -20,7 +20,7 @@
 */
 
 const test = require('tape');
-const beamcoder = require('../index.js');
+const beamcoder = require('../ts');
 
 test('Creating a muxer', t => {
   let mx = beamcoder.muxer({ name: 'mpegts' });

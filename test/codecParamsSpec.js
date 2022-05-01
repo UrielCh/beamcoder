@@ -20,7 +20,7 @@
 */
 
 const test = require('tape');
-const beamcoder = require('../index.js');
+const beamcoder = require('../ts');
 
 test('Creating codec parameters', t => {
   let cps = beamcoder.codecParameters();

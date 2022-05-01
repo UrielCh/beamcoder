@@ -26,7 +26,7 @@
   Output can be viewed in VLC. Make sure "All Files" is selected to see the file.
 */
 
-const beamcoder = require('../index.js'); // Use require('beamcoder') externally
+const beamcoder = require('../ts'); // Use require('beamcoder') externally
 const fs = require('fs');
 
 let endcode = Buffer.from([0, 0, 1, 0xb7]);

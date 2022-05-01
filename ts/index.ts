@@ -18,12 +18,17 @@
   https://www.streampunk.media/ mailto:furnace@streampunk.media
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
+import bindings from 'bindings';
+import * as Beamcodere from './types';
+// import {Beamcoder as BeamcoderType} from './types/old';
+declare type BeamcoderType = typeof Beamcodere;
 
-const beamcoder = require('bindings')('beamcoder');
-const beamstreams = require('./beamstreams.js');
+const beamcoder = bindings('beamcoder') as BeamcoderType; // BeamcoderType;
+// const beamcoder = require('bindings')('beamcoder');
+import { demuxerStream, muxerStream, makeSources, makeStreams } from './beamstreams';
 
 // Provide useful debug on segfault-related crash
-const SegfaultHandler = require('segfault-handler');
+import SegfaultHandler from 'segfault-handler';
 SegfaultHandler.registerHandler('crash.log');
 
 const splash = `Aerostat Beam Coder  Copyright (C) 2019  Streampunk Media Ltd
@@ -35,10 +40,10 @@ https://github.com/Streampunk/beamcoder/blob/master/LICENSE`;
 console.log(splash);
 console.log('Using FFmpeg version', beamcoder.avVersionInfo());
 
-beamcoder.demuxerStream = beamstreams.demuxerStream;
-beamcoder.muxerStream = beamstreams.muxerStream;
+beamcoder.demuxerStream = demuxerStream;
+beamcoder.muxerStream = muxerStream;
 
-beamcoder.makeSources = beamstreams.makeSources;
-beamcoder.makeStreams = beamstreams.makeStreams;
+beamcoder.makeSources = makeSources;
+beamcoder.makeStreams = makeStreams;
 
 module.exports = beamcoder;

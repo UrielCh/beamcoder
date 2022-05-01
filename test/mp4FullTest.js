@@ -1,5 +1,5 @@
 const test = require('tape');
-const beamcoder = require('../index.js');
+const beamcoder = require('../ts');
 const md5File = require('md5-file');
 
 

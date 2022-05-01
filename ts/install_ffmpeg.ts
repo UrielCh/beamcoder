@@ -27,7 +27,7 @@ const cp = require('child_process');
 const [ mkdir, access, rename, execFile, exec ] = // eslint-disable-line
   [ fs.mkdir, fs.access, fs.rename, cp.execFile, cp.exec ].map(util.promisify);
 
-async function get(ws, url, name) {
+async function get(ws, url, name): Promise<void> {
   let received = 0;
   let totalLength = 0;
   return new Promise((comp, err) => {
@@ -53,7 +53,7 @@ async function get(ws, url, name) {
   });
 }
 
-async function getHTML(url, name) {
+async function getHTML(url, name): Promise<Buffer> {
   let received = 0;
   let totalLength = 0;
   return new Promise((resolve, reject) => {
@@ -76,7 +76,7 @@ async function getHTML(url, name) {
   });
 }
 
-async function inflate(rs, folder, name) {
+async function inflate(rs, folder, name): Promise<void> {
   const unzip = require('unzipper');
   const directory = await unzip.Open.file(`${folder}/${name}.zip`);
   const directoryName = directory.files[0].path;

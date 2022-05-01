@@ -19,7 +19,7 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const beamcoder = require('../index.js');
+const beamcoder = require('../ts');
 const fs = require('fs');
 
 async function run() {

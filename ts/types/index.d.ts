@@ -1,16 +1,18 @@
-export * from "./types/CodecPar"
-export * from "./types/Packet"
-export * from "./types/Frame"
-export * from "./types/Stream"
-export * from "./types/Codec"
-export * from "./types/FormatContext"
-export * from "./types/Demuxer"
-export * from "./types/Decoder"
-export * from "./types/Filter"
-export * from "./types/Encoder"
-export * from "./types/Muxer"
-export * from "./types/Beamstreams"
-export * from "./types/HWContext"
+export * from "./Beamstreams"
+export * from "./Codec"
+export * from "./CodecContext"
+export * from "./CodecPar"
+export * from "./Decoder"
+export * from "./Demuxer"
+export * from "./Encoder"
+export * from "./Filter"
+export * from "./FormatContext"
+export * from "./Frame"
+export * from "./HWContext"
+export * from "./Muxer"
+export * from "./Packet"
+export * from "./PrivClass"
+export * from "./Stream"
 
 export const AV_NOPTS_VALUE: number
 
@@ -80,4 +82,4 @@ export function protocols(): { inputs: Array<string>, outputs: Array<string> }
  */
 export function logging(level?: string): string | undefined
 
-export as namespace Beamcoder
+// export as namespace Beamcoder

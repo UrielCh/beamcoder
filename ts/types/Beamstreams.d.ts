@@ -21,7 +21,7 @@ export interface WritableDemuxerStream extends NodeJS.WritableStream {
  * @param options.highwaterMark Buffer level when `stream.write()` starts returng false.
  * @returns A WritableDemuxerStream that can be streamed to.
  */
-export function demuxerStream(options: { highwaterMark?: number }): WritableDemuxerStream
+export function demuxerStream(params: { highwaterMark?: number }): WritableDemuxerStream
 
 /**
  * A [Node.js Readable stream](https://nodejs.org/docs/latest-v12.x/api/stream.html#stream_readable_streams)
@@ -40,7 +40,7 @@ export interface ReadableMuxerStream extends NodeJS.ReadableStream {
  * @param options.highwaterMark The maximum number of bytes to store in the internal buffer before ceasing to read from the underlying resource.
  * @returns A ReadableMuxerStream that can be streamed from.
  */
-export function muxerStream(options: { highwaterMark?: number }): ReadableMuxerStream
+export function muxerStream(params: { highwaterMark?: number }): ReadableMuxerStream
 
 /** Create object for AVIOContext based buffered I/O */
 export function governor(options: { highWaterMark: number }): {
@@ -82,17 +82,24 @@ export interface BeamstreamParams {
 		formatName: string
 		url?: string
 		output_stream?: NodeJS.WritableStream
+		flags?: {
+			READ?: boolean
+			WRITE?: boolean
+			NONBLOCK?: boolean
+			DIRECT?: boolean
+		}
+		options?: { [key:string]: any }
 	}
 }
 /**
  * Initialise the sources for the beamstream process.
  * Note - the params object is updated by the function.
  */
-export function makeSources(params: BeamstreamParams): Promise<null>
+export function makeSources(params: BeamstreamParams): Promise<void>
 /**
  * Initialise the output streams for the beamstream process.
  * Note - the params object is updated by the function.
  * @returns Promise which resolves to an object with a run function that starts the processing
  */
-export function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<null>} >
+export function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<void>} >
 

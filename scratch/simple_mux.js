@@ -18,7 +18,7 @@
   https://www.streampunk.media/ mailto:furnace@streampunk.media
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
-const beamcoder = require('../index.js');
+const beamcoder = require('../ts');
 
 async function run() {
   let demuxer = await beamcoder.demuxer('../media/sound/BBCNewsCountdown.wav');

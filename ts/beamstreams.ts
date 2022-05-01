@@ -19,8 +19,13 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const beamcoder = require('bindings')('beamcoder');
-const { Writable, Readable, Transform } = require('stream');
+import bindings from 'bindings';
+//import { BeamcoderType } from './types/BeamcoderType';
+
+const beamcoder = bindings('beamcoder') as any;// BeamcoderType;
+
+import { Writable, Readable, Transform } from 'stream';
+import { BeamstreamParams, ReadableMuxerStream, WritableDemuxerStream } from './types';
 
 const doTimings = false;
 const timings = [];
@@ -130,7 +135,7 @@ function serialBalancer(numStreams) {
       // console.log(streamIndex, pending.map(p => p.ts), minTS);
       const nextPend = pending.find(pend => pend.pkt && (pend.ts === minTS));
       if (nextPend) nextPend.resolve(nextPend.pkt);
-      if (!pkt) resolve();
+      if (!pkt) resolve(undefined);
     });
   };
 
@@ -194,7 +199,7 @@ function parallelBalancer(params, streamType, numStreams) {
       (async () => {
         const start = process.hrtime();
         const reqTime = start[0] * 1e3 + start[1] / 1e6;
-        const result = await pullSet();
+        const result: any = await pullSet();
         if (result.done)
           this.push(null);
         else {
@@ -206,7 +211,7 @@ function parallelBalancer(params, streamType, numStreams) {
     },
   });
 
-  readStream.pushPkts = (packets, stream, streamIndex, final = false) => {
+  (readStream as any).pushPkts = (packets, stream, streamIndex, final = false) => {
     if (packets && packets.frames.length) {
       return packets.frames.reduce(async (promise, pkt) => {
         await promise;
@@ -254,7 +259,7 @@ function teeBalancer(params, numStreams) {
         (async () => {
           const start = process.hrtime();
           const reqTime = start[0] * 1e3 + start[1] / 1e6;
-          const result = await pullFrame(s);
+          const result: any = await pullFrame(s);
           if (result.done)
             this.push(null);
           else {
@@ -265,7 +270,7 @@ function teeBalancer(params, numStreams) {
       },
     }));
 
-  readStreams.pushFrames = frames => {
+  (readStreams as any).pushFrames = frames => {
     return new Promise(resolve => {
       pending.forEach((p, index) => {
         if (frames.length)
@@ -328,7 +333,7 @@ function writeStream(params, processFn, finalFn, reject) {
   return new Writable({
     objectMode: true,
     highWaterMark: params.highWaterMark ? params.highWaterMark || 4 : 4,
-    write(val, encoding, cb) {
+    write(val, encoding, cb: any) {
       (async () => {
         const start = process.hrtime();
         const reqTime = start[0] * 1e3 + start[1] / 1e6;
@@ -342,7 +347,7 @@ function writeStream(params, processFn, finalFn, reject) {
         cb(null, result);
       })().catch(cb);
     },
-    final(cb) {
+    final(cb: any) {
       (async () => {
         const result = finalFn ? await finalFn() : null;
         if (doTimings && ('mux' === params.name)) {
@@ -417,17 +422,17 @@ function createBeamWritableStream(params, governor) {
   return beamStream;
 }
 
-function demuxerStream(params) {
+export function demuxerStream(params: { highwaterMark?: number }): WritableDemuxerStream {
   const governor = new beamcoder.governor({});
   const stream = createBeamWritableStream(params, governor);
   stream.on('finish', () => governor.finish());
   stream.on('error', console.error);
-  stream.demuxer = options => {
+  (stream as any).demuxer = options => {
     options.governor = governor;
     // delay initialisation of demuxer until stream has been written to - avoids lock-up
     return new Promise(resolve => setTimeout(async () => resolve(await beamcoder.demuxer(options)), 20));
   };
-  return stream;
+  return stream as any as WritableDemuxerStream;
 }
 
 function createBeamReadableStream(params, governor) {
@@ -446,23 +451,23 @@ function createBeamReadableStream(params, governor) {
   return beamStream;
 }
 
-function muxerStream(params) {
+export function muxerStream(params: { highwaterMark?: number }): ReadableMuxerStream {
   const governor = new beamcoder.governor({ highWaterMark: 1 });
   const stream = createBeamReadableStream(params, governor);
   stream.on('end', () => governor.finish());
   stream.on('error', console.error);
-  stream.muxer = options => {
+  (stream as any).muxer = options => {
     options.governor = governor;
     return beamcoder.muxer(options);
   };
-  return stream;
+  return stream as any as ReadableMuxerStream;
 }
 
-async function makeSources(params) {
+export async function makeSources(params: BeamstreamParams): Promise<void> {
   if (!params.video) params.video = [];
   if (!params.audio) params.audio = [];
 
-  params.video.forEach(p => p.sources.forEach(src => {
+  params.video.forEach(p => p.sources.forEach((src: any) => {
     if (src.input_stream) {
       const demuxerStream = beamcoder.demuxerStream({ highwaterMark: 1024 });
       src.input_stream.pipe(demuxerStream);
@@ -470,7 +475,7 @@ async function makeSources(params) {
     } else
       src.format = beamcoder.demuxer({ url: src.url, iformat: src.iformat, options: src.options });
   }));
-  params.audio.forEach(p => p.sources.forEach(src => {
+  params.audio.forEach(p => p.sources.forEach((src: any) => {
     if (src.input_stream) {
       const demuxerStream = beamcoder.demuxerStream({ highwaterMark: 1024 });
       src.input_stream.pipe(demuxerStream);
@@ -481,7 +486,7 @@ async function makeSources(params) {
 
   await params.video.reduce(async (promise, p) => {
     await promise;
-    return p.sources.reduce(async (promise, src) => {
+    return p.sources.reduce(async (promise, src: any) => {
       await promise;
       src.format = await src.format;
       if (src.ms && !src.input_stream)
@@ -491,7 +496,7 @@ async function makeSources(params) {
   }, Promise.resolve());
   await params.audio.reduce(async (promise, p) => {
     await promise;
-    return p.sources.reduce(async (promise, src) => {
+    return p.sources.reduce(async (promise, src: any) => {
       await promise;
       src.format = await src.format;
       if (src.ms && !src.input_stream)
@@ -500,16 +505,16 @@ async function makeSources(params) {
     }, Promise.resolve());
   }, Promise.resolve());
 
-  params.video.forEach(p => p.sources.forEach(src => 
+  params.video.forEach(p => p.sources.forEach((src: any) => 
     src.stream = readStream({ highWaterMark : 1 }, src.format, src.ms, src.streamIndex)));
-  params.audio.forEach(p => p.sources.forEach(src => 
+  params.audio.forEach(p => p.sources.forEach((src: any) => 
     src.stream = readStream({ highWaterMark : 1 }, src.format, src.ms, src.streamIndex)));
 }
 
 function runStreams(streamType, sources, filterer, streams, mux, muxBalancer) {
   return new Promise((resolve, reject) => {
     if (!sources.length)
-      return resolve();
+      return resolve(undefined);
 
     const timeBaseStream = sources[0].format.streams[sources[0].streamIndex];
     const filterBalancer = parallelBalancer({ name: 'filterBalance', highWaterMark : 1 }, streamType, sources.length);
@@ -518,8 +523,8 @@ function runStreams(streamType, sources, filterer, streams, mux, muxBalancer) {
       const decStream = transformStream({ name: 'decode', highWaterMark : 1 },
         pkts => src.decoder.decode(pkts), () => src.decoder.flush(), reject);
       const filterSource = writeStream({ name: 'filterSource', highWaterMark : 1 },
-        pkts => filterBalancer.pushPkts(pkts, src.format.streams[src.streamIndex], srcIndex),
-        () => filterBalancer.pushPkts(null, src.format.streams[src.streamIndex], srcIndex, true), reject);
+        pkts => (filterBalancer as any).pushPkts(pkts, src.format.streams[src.streamIndex], srcIndex),
+        () => (filterBalancer as any).pushPkts(null, src.format.streams[src.streamIndex], srcIndex, true), reject);
 
       src.stream.pipe(decStream).pipe(filterSource);
     });
@@ -530,7 +535,7 @@ function runStreams(streamType, sources, filterer, streams, mux, muxBalancer) {
       return filterer.filter(frms);
     }, () => {}, reject);
     const streamSource = writeStream({ name: 'streamSource', highWaterMark : 1 },
-      frms => streamTee.pushFrames(frms), () => streamTee.pushFrames([], true), reject);
+      frms => (streamTee as any).pushFrames(frms), () => (streamTee as any).pushFrames([], true), reject);
 
     filterBalancer.pipe(filtStream).pipe(streamSource);
 
@@ -550,17 +555,17 @@ function runStreams(streamType, sources, filterer, streams, mux, muxBalancer) {
   });
 }
 
-async function makeStreams(params) {
+export async function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<void>} > {
   params.video.forEach(p => {
-    p.sources.forEach(src =>
+    p.sources.forEach((src: any) =>
       src.decoder = beamcoder.decoder({ demuxer: src.format, stream_index: src.streamIndex }));
   });
   params.audio.forEach(p => {
-    p.sources.forEach(src =>
+    p.sources.forEach((src: any) =>
       src.decoder = beamcoder.decoder({ demuxer: src.format, stream_index: src.streamIndex }));
   });
 
-  params.video.forEach(p => {
+  params.video.forEach((p: any) => {
     p.filter = beamcoder.filterer({
       filterType: 'video',
       inputParams: p.sources.map((src, i) => {
@@ -576,11 +581,11 @@ async function makeStreams(params) {
       outputParams: p.streams.map((str, i) => { return { name: `out${i}:v`, pixelFormat: str.codecpar.format }; }),
       filterSpec: p.filterSpec });
   });
-  const vidFilts = await Promise.all(params.video.map(p => p.filter));
-  params.video.forEach((p, i) => p.filter = vidFilts[i]);
+  const vidFilts = await Promise.all(params.video.map((p: any) => p.filter));
+  params.video.forEach((p: any, i) => p.filter = vidFilts[i]);
   // params.video.forEach(p => console.log(p.filter.graph.dump()));
 
-  params.audio.forEach(p => {
+  params.audio.forEach((p: any) => {
     p.filter = beamcoder.filterer({
       filterType: 'audio',
       inputParams: p.sources.map((src, i) => {
@@ -600,8 +605,8 @@ async function makeStreams(params) {
           channelLayout: str.codecpar.channel_layout }; }),
       filterSpec: p.filterSpec });
   });
-  const audFilts = await Promise.all(params.audio.map(p => p.filter));
-  params.audio.forEach((p, i) => p.filter = audFilts[i]);
+  const audFilts = await Promise.all(params.audio.map((p: any) => p.filter));
+  params.audio.forEach((p: any, i) => p.filter = audFilts[i]);
   // params.audio.forEach(p => console.log(p.filter.graph.dump()));
 
   let mux;
@@ -612,7 +617,7 @@ async function makeStreams(params) {
   } else
     mux = beamcoder.muxer({ format_name: params.out.formatName });
 
-  params.video.forEach(p => {
+  params.video.forEach((p: any) => {
     p.streams.forEach((str, i) => {
       const encParams = p.filter.graph.filters.find(f => f.name === `out${i}:v`).inputs[0];
       str.encoder = beamcoder.encoder({
@@ -631,8 +636,8 @@ async function makeStreams(params) {
     });
   });
 
-  params.audio.forEach(p => {
-    p.streams.forEach((str, i) => {
+  params.audio.forEach((p: any) => {
+    p.streams.forEach((str: any, i) => {
       const encParams = p.filter.graph.filters.find(f => f.name === `out${i}:a`).inputs[0];
       str.encoder = beamcoder.encoder({
         name: str.name,
@@ -646,7 +651,7 @@ async function makeStreams(params) {
   });
 
   params.video.forEach(p => {
-    p.streams.forEach(str => {
+    p.streams.forEach((str: any) => {
       str.stream = mux.newStream({ 
         name: str.name,
         time_base: str.time_base,
@@ -656,7 +661,7 @@ async function makeStreams(params) {
   });
 
   params.audio.forEach(p => {
-    p.streams.forEach(str => {
+    p.streams.forEach((str: any) => {
       str.stream = mux.newStream({
         name: str.name,
         time_base: str.time_base,
@@ -675,18 +680,11 @@ async function makeStreams(params) {
 
       const muxBalancer = new serialBalancer(mux.streams.length);
       const muxStreamPromises = [];
-      params.video.forEach(p => muxStreamPromises.push(runStreams('video', p.sources, p.filter, p.streams, mux, muxBalancer)));
-      params.audio.forEach(p => muxStreamPromises.push(runStreams('audio', p.sources, p.filter, p.streams, mux, muxBalancer)));
+      params.video.forEach((p: any) => muxStreamPromises.push(runStreams('video', p.sources, p.filter, p.streams, mux, muxBalancer)));
+      params.audio.forEach((p: any) => muxStreamPromises.push(runStreams('audio', p.sources, p.filter, p.streams, mux, muxBalancer)));
       await Promise.all(muxStreamPromises);
 
       await mux.writeTrailer();
     }
   };
 }
-
-module.exports = {
-  demuxerStream,
-  muxerStream,
-  makeSources,
-  makeStreams
-};

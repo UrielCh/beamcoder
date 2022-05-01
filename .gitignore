@@ -74,3 +74,5 @@ ffmpeg/
 *.swp
 .vscode/
 scratch/wibble.h264
+ts/*.d.ts
+ts/*.js

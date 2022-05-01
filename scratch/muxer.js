@@ -21,7 +21,7 @@
 
 // Work in progress
 
-const beamcoder = require('../index.js');
+const beamcoder = require('../ts');
 
 const STREAM_FRAME_RATE = 25;
 
