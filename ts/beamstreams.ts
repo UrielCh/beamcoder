@@ -26,6 +26,7 @@ import { Readable } from 'stream';
 import { BeamstreamParams } from './types';
 import frameDicer from './frameDicer';
 import writeStream from './writeStream';
+import readStream from './readStream';
 
 function serialBalancer(numStreams) {
   let pending = [];
@@ -138,35 +139,6 @@ function parallelBalancer(params, streamType, numStreams) {
   };
 
   return readStream;
-}
-
-function readStream(params, demuxer, ms, index) {
-  const time_base = demuxer.streams[index].time_base;
-  const end_pts = ms ? ms.end * time_base[1] / time_base[0] : Number.MAX_SAFE_INTEGER;
-  async function getPacket() {
-    let packet = null;
-    do { packet = await demuxer.read(); }
-    while (packet && packet.stream_index !== index);
-    return packet;
-  }
-
-  return new Readable({
-    objectMode: true,
-    highWaterMark: params.highWaterMark ? params.highWaterMark || 4 : 4,
-    read() {
-      (async () => {
-        const start = process.hrtime();
-        const reqTime = start[0] * 1e3 + start[1] / 1e6;
-        const packet = await getPacket();
-        if (packet && (packet.pts < end_pts)) {
-          packet.timings = {};
-          packet.timings.read = { reqTime: reqTime, elapsed: process.hrtime(start)[1] / 1000000 };
-          this.push(packet);
-        } else
-          this.push(null);
-      })();
-    }
-  });
 }
 
 export async function makeSources(params: BeamstreamParams): Promise<void> {
