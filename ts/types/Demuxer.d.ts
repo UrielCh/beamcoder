@@ -91,7 +91,12 @@ export function demuxers(): { [key: string]: InputFormat }
  * format details by consuming data from the source. The promise will wait indefinitely 
  * until sufficient source data has been read.
  */
-export function demuxer(url: string): Promise<Demuxer>
+ // this code look to have error....
+ // duplicate governor splot
+ // TODO FIX ME
+ export function demuxer(options: { governor?: Governor, url?: string, iformat?: InputFormat, options?: { governor: Governor } } | string): Promise<Demuxer>
+//export function demuxer(url: string): Promise<Demuxer>
+
 
 /** Object to provide additional metadata on Demuxer creation */
 export interface DemuxerCreateOptions {

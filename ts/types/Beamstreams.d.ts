@@ -3,19 +3,21 @@ import { Muxer, MuxerCreateOptions } from "./Muxer"
 import { InputFormat } from "./FormatContext"
 
 /**
+ * WritableDemuxerStream is not a Writable Class augmented by a demuxer function, should be replace by a new class
  * A [Node.js Writable stream](https://nodejs.org/docs/latest-v12.x/api/stream.html#stream_writable_streams)
  * allowing source data to be streamed to the demuxer from a file or other stream source such as a network connection
  */
-export interface WritableDemuxerStream extends NodeJS.WritableStream {
+ export type WritableDemuxerStream = Writable & {
 	/**
 	 * Create a demuxer for this source
 	 * @param options a DemuxerCreateOptions object
-   * @returns a promise that resolves to a Demuxer when it has determined sufficient 
+     * @returns a promise that resolves to a Demuxer when it has determined sufficient
 	 * format details by consuming data from the source. The promise will wait indefinitely 
 	 * until sufficient source data has been read.
 	 */
-	demuxer(options: DemuxerCreateOptions): Promise<Demuxer>
-}
+	 demuxer: (options?: { iformat?: InputFormat, options?: { [key: string]: any }, governor?: Governor }) => Promise<Demuxer>
+};
+
 /**
  * Create a WritableDemuxerStream to allow streaming to a Demuxer
  * @param options.highwaterMark Buffer level when `stream.write()` starts returng false.
@@ -27,14 +29,16 @@ export function demuxerStream(params: { highwaterMark?: number }): WritableDemux
  * A [Node.js Readable stream](https://nodejs.org/docs/latest-v12.x/api/stream.html#stream_readable_streams)
  * allowing data to be streamed from the muxer to a file or other stream destination such as a network connection
  */
-export interface ReadableMuxerStream extends NodeJS.ReadableStream {
+ export type ReadableMuxerStream = Readable & {
 	/**
-	 * Create a muxer for this source
-	 * @param options a MuxerCreateOptions object
-   * @returns A Muxer object
+	 * Create a demuxer for this source
+	 * @param options a DemuxerCreateOptions object
+     * @returns a promise that resolves to a Demuxer when it has determined sufficient
+	 * format details by consuming data from the source. The promise will wait indefinitely 
+	 * until sufficient source data has been read.
 	 */
-	muxer(options: MuxerCreateOptions): Muxer
-}
+	 muxer: (options?: MuxerCreateOptions & {governor?: Governor }) => Muxer
+};
 /**
  * Create a ReadableMuxerStream to allow streaming from a Muxer
  * @param options.highwaterMark The maximum number of bytes to store in the internal buffer before ceasing to read from the underlying resource.
