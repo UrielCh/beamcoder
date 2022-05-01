@@ -21,6 +21,8 @@
 
 import bindings from 'bindings';
 import calcStats from './calcStats';
+import createBeamReadableStream from './createBeamReadableStream';
+import createBeamWritableStream from './createBeamWritableStream';
 //import { BeamcoderType } from './types/BeamcoderType';
 
 const beamcoder = bindings('beamcoder') as any;// BeamcoderType;
@@ -402,19 +404,6 @@ function readStream(params, demuxer, ms, index) {
   });
 }
 
-function createBeamWritableStream(params, governor) {
-  const beamStream = new Writable({
-    highWaterMark: params.highwaterMark || 16384,
-    write: (chunk, encoding, cb) => {
-      (async () => {
-        await governor.write(chunk);
-        cb();
-      })();
-    }
-  });
-  return beamStream;
-}
-
 export function demuxerStream(params: { highwaterMark?: number }): WritableDemuxerStream {
   const governor = new beamcoder.governor({});
   const stream = createBeamWritableStream(params, governor);
@@ -426,22 +415,6 @@ export function demuxerStream(params: { highwaterMark?: number }): WritableDemux
     return new Promise(resolve => setTimeout(async () => resolve(await beamcoder.demuxer(options)), 20));
   };
   return stream as any as WritableDemuxerStream;
-}
-
-function createBeamReadableStream(params, governor) {
-  const beamStream = new Readable({
-    highWaterMark: params.highwaterMark || 16384,
-    read: size => {
-      (async () => {
-        const chunk = await governor.read(size);
-        if (0 === chunk.length)
-          beamStream.push(null);
-        else
-          beamStream.push(chunk);
-      })();
-    }
-  });
-  return beamStream;
 }
 
 export function muxerStream(params: { highwaterMark?: number }): ReadableMuxerStream {
