@@ -23,8 +23,8 @@ import beamcoder from './beamcoder';
 
 import { default as demuxerStream } from './demuxerStream';
 import { default as muxerStream } from './muxerStream';
-
-import { makeSources, makeStreams } from './beamstreams';
+import { default as makeSources } from './makeSources';
+import { default as makeStreams } from './makeStreams';
 
 // Provide useful debug on segfault-related crash
 import SegfaultHandler from 'segfault-handler';
