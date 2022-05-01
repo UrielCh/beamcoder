@@ -20,17 +20,14 @@
 */
 
 import beamcoder from './beamcoder'
-import calcStats from './calcStats';
 import createBeamReadableStream from './createBeamReadableStream';
 import createBeamWritableStream from './createBeamWritableStream';
 import teeBalancer from './teeBalancer';
 import transformStream from './transformStream';
-import { Writable, Readable } from 'stream';
+import { Readable } from 'stream';
 import { BeamstreamParams, ReadableMuxerStream, WritableDemuxerStream } from './types';
 import frameDicer from './frameDicer';
-
-const doTimings = false;
-const timings = [];
+import writeStream from './writeStream';
 
 function serialBalancer(numStreams) {
   let pending = [];
@@ -143,57 +140,6 @@ function parallelBalancer(params, streamType, numStreams) {
   };
 
   return readStream;
-}
-
-function writeStream(params, processFn, finalFn, reject) {
-  return new Writable({
-    objectMode: true,
-    highWaterMark: params.highWaterMark ? params.highWaterMark || 4 : 4,
-    write(val, encoding, cb: any) {
-      (async () => {
-        const start = process.hrtime();
-        const reqTime = start[0] * 1e3 + start[1] / 1e6;
-        const result = await processFn(val);
-        if ('mux' === params.name) {
-          const pktTimings = val.timings;
-          pktTimings[params.name] = { reqTime: reqTime, elapsed: process.hrtime(start)[1] / 1000000 };
-          if (doTimings)
-            timings.push(pktTimings);
-        }
-        cb(null, result);
-      })().catch(cb);
-    },
-    final(cb: any) {
-      (async () => {
-        const result = finalFn ? await finalFn() : null;
-        if (doTimings && ('mux' === params.name)) {
-          const elapsedStats = {};
-          Object.keys(timings[0]).forEach(k => elapsedStats[k] = calcStats(timings.slice(10, -10), k, 'elapsed'));
-          console.log('elapsed:');
-          console.table(elapsedStats);
-
-          const absArr = timings.map(t => {
-            const absDelays = {};
-            const keys = Object.keys(t);
-            keys.forEach((k, i) => absDelays[k] = { reqDelta: i > 0 ? t[k].reqTime - t[keys[i-1]].reqTime : 0 });
-            return absDelays;
-          });
-          const absStats = {};
-          Object.keys(absArr[0]).forEach(k => absStats[k] = calcStats(absArr.slice(10, -10), k, 'reqDelta'));
-          console.log('request time delta:');
-          console.table(absStats);
-
-          const totalsArr = timings.map(t => { 
-            const total = (t.mux && t.read) ? t.mux.reqTime - t.read.reqTime + t.mux.elapsed : 0;
-            return { total: { total: total }};
-          });
-          console.log('total time:');
-          console.table(calcStats(totalsArr.slice(10, -10), 'total', 'total'));
-        }
-        cb(null, result);
-      })().catch(cb);
-    }
-  }).on('error', err => reject(err));
 }
 
 function readStream(params, demuxer, ms, index) {
