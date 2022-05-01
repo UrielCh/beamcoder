@@ -21,9 +21,10 @@
 
 import beamcoder from './beamcoder';
 
-// const beamcoder = require('bindings')('beamcoder');
-import { default as demuxerStream  } from './demuxerStream';
-import { muxerStream, makeSources, makeStreams } from './beamstreams';
+import { default as demuxerStream } from './demuxerStream';
+import { default as muxerStream } from './muxerStream';
+
+import { makeSources, makeStreams } from './beamstreams';
 
 // Provide useful debug on segfault-related crash
 import SegfaultHandler from 'segfault-handler';

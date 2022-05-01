@@ -20,11 +20,10 @@
 */
 
 import beamcoder from './beamcoder'
-import createBeamReadableStream from './createBeamReadableStream';
 import teeBalancer from './teeBalancer';
 import transformStream from './transformStream';
 import { Readable } from 'stream';
-import { BeamstreamParams, ReadableMuxerStream } from './types';
+import { BeamstreamParams } from './types';
 import frameDicer from './frameDicer';
 import writeStream from './writeStream';
 
@@ -168,18 +167,6 @@ function readStream(params, demuxer, ms, index) {
       })();
     }
   });
-}
-
-export function muxerStream(params: { highwaterMark?: number }): ReadableMuxerStream {
-  const governor = new beamcoder.governor({ highWaterMark: 1 });
-  const stream = createBeamReadableStream(params, governor);
-  stream.on('end', () => governor.finish());
-  stream.on('error', console.error);
-  (stream as any).muxer = options => {
-    options.governor = governor;
-    return beamcoder.muxer(options);
-  };
-  return stream as any as ReadableMuxerStream;
 }
 
 export async function makeSources(params: BeamstreamParams): Promise<void> {
