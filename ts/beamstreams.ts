@@ -20,6 +20,7 @@
 */
 
 import bindings from 'bindings';
+import calcStats from './calcStats';
 //import { BeamcoderType } from './types/BeamcoderType';
 
 const beamcoder = bindings('beamcoder') as any;// BeamcoderType;
@@ -320,14 +321,6 @@ function transformStream(params, processFn, flushFn, reject) {
     }
   }).on('error', err => reject(err));
 }
-
-const calcStats = (arr, elem, prop) => {
-  const mean = arr.reduce((acc, cur) => cur[elem] ? acc + cur[elem][prop] : acc, 0) / arr.length;
-  const stdDev = Math.pow(arr.reduce((acc, cur) => cur[elem] ? acc + Math.pow(cur[elem][prop] - mean, 2) : acc, 0) / arr.length, 0.5);
-  const max = arr.reduce((acc, cur) => cur[elem] ? Math.max(cur[elem][prop], acc) : acc, 0);
-  const min = arr.reduce((acc, cur) => cur[elem] ? Math.min(cur[elem][prop], acc) : acc, Number.MAX_VALUE);
-  return { mean: mean, stdDev: stdDev, max: max, min: min };
-};
 
 function writeStream(params, processFn, finalFn, reject) {
   return new Writable({
