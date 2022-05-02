@@ -52,6 +52,8 @@ export interface EventFlags {
  * Stream describes the properties of a stream.
  */
 export interface Stream extends toJSONAble {
+  // native code;
+  readonly _stream: {};
 	/** Object name. */
   readonly type: 'Stream'
 	/** The stream index in the container. */
@@ -160,7 +162,4 @@ export interface Stream extends toJSONAble {
    * - muxing: filled by the caller before writeHeader()
    */
   codecpar: CodecPar
-
-  // native code;
-  readonly _stream: {};
 }
