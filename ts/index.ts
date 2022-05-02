@@ -22,7 +22,7 @@
 import beamcoder from './beamcoder';
 
 import { default as demuxerStream } from './demuxerStream';
-import { default as muxerStream } from './muxerStream';
+export { default as MuxerStream } from './MuxerStream';
 import { default as makeSources } from './makeSources';
 import { default as makeStreams } from './makeStreams';
 
@@ -40,8 +40,6 @@ console.log(splash);
 console.log('Using FFmpeg version', beamcoder.avVersionInfo());
 
 beamcoder.demuxerStream = demuxerStream;
-beamcoder.muxerStream = muxerStream;
-
 beamcoder.makeSources = makeSources;
 beamcoder.makeStreams = makeStreams;
 

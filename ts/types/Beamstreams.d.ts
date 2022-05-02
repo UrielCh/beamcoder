@@ -25,34 +25,6 @@ import { InputFormat } from "./FormatContext"
  */
 export function demuxerStream(params: { highwaterMark?: number }): WritableDemuxerStream
 
-/**
- * A [Node.js Readable stream](https://nodejs.org/docs/latest-v12.x/api/stream.html#stream_readable_streams)
- * allowing data to be streamed from the muxer to a file or other stream destination such as a network connection
- */
- export type ReadableMuxerStream = Readable & {
-	/**
-	 * Create a demuxer for this source
-	 * @param options a DemuxerCreateOptions object
-     * @returns a promise that resolves to a Demuxer when it has determined sufficient
-	 * format details by consuming data from the source. The promise will wait indefinitely 
-	 * until sufficient source data has been read.
-	 */
-	 muxer: (options?: MuxerCreateOptions & {governor?: Governor }) => Muxer
-};
-/**
- * Create a ReadableMuxerStream to allow streaming from a Muxer
- * @param options.highwaterMark The maximum number of bytes to store in the internal buffer before ceasing to read from the underlying resource.
- * @returns A ReadableMuxerStream that can be streamed from.
- */
-export function muxerStream(params: { highwaterMark?: number }): ReadableMuxerStream
-
-/** Create object for AVIOContext based buffered I/O */
-// export function governor(options: { highWaterMark: number }): {
-//   read(len: number): Promise<Buffer>
-//   write(data: Buffer): Promise<null>
-//   finish(): undefined
-// }
-
 /** Source definition for a beamstream channel, from either a file or NodeJS ReadableStream */
 export interface BeamstreamSource {
 	url?: string

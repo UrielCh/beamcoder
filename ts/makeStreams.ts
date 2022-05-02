@@ -23,6 +23,7 @@ import beamcoder from './beamcoder'
 import { BeamstreamChannel, BeamstreamParams, BeamstreamSource, BeamstreamStream, Filterer, FilterLink, Muxer } from './types';
 import serialBalancer from './serialBalancer';
 import runStreams from './runStreams';
+import MuxerStream from './MuxerStream';
 
 export default async function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<void> }> {
   params.video.forEach((channel: BeamstreamChannel) => {
@@ -93,7 +94,7 @@ export default async function makeStreams(params: BeamstreamParams): Promise<{ r
 
   let mux: Muxer;
   if (params.out.output_stream) {
-    let muxerStream = beamcoder.muxerStream({ highwaterMark: 1024 });
+    let muxerStream = new MuxerStream({ highwaterMark: 1024 });
     muxerStream.pipe(params.out.output_stream);
     mux = muxerStream.muxer({ format_name: params.out.formatName });
   } else {
