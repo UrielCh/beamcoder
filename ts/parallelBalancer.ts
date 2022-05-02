@@ -85,7 +85,7 @@ export default class parallelBalancer extends Readable {
 
   private async pushPkt(pkt: Frame, streamIndex: number, ts: number): Promise<localFrame> {
     return new Promise(resolve => {
-      Object.assign(this.pending[streamIndex], { pkt: pkt, ts: ts, final: pkt ? false : true, resolve: resolve });
+      Object.assign(this.pending[streamIndex], { pkt, ts, final: pkt ? false : true, resolve });
       this.makeSet(this.resolveGet);
     })
   }

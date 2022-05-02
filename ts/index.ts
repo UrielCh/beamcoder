@@ -31,11 +31,9 @@ export { default as makeSources } from './makeSources';
 export { default as makeStreams } from './makeStreams';
 
 
-
 // Provide useful debug on segfault-related crash
 import SegfaultHandler from 'segfault-handler';
 SegfaultHandler.registerHandler('crash.log');
-
 
 export function splash() {
   const splash = `Aerostat Beam Coder  Copyright (C) 2019  Streampunk Media Ltd
@@ -48,7 +46,6 @@ export function splash() {
   console.log('Using FFmpeg version', beamcoder.avVersionInfo());  
 }
 
-// export { Codec, CodecContext, CodecPar, Decoder, DecodedFrames, Demuxer, EncodedPackets, Encoder, Filter, MediaType, FilterLink, FilterContext, FilterGraph, Filterer, InputFormat, OutputFormat, Frame, SampleFormat, governor, HWDeviceContext, HWFramesContext, Muxer, Packet, PrivClass, Disposition, Stream } from './types';
 export { Codec, CodecContext, CodecPar, Decoder, DecodedFrames, Demuxer, EncodedPackets, Encoder, Filter } from './types';
 export { MediaType, FilterLink, FilterContext, FilterGraph, Filterer, InputFormat, OutputFormat, Frame } from './types';
 export { SampleFormat, HWDeviceContext, HWFramesContext, Muxer, Packet, PrivClass, Disposition, Stream } from './types';
