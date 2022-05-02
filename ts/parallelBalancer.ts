@@ -20,14 +20,18 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-// TODO Convert to class
-// TODO Convert to class
-// TODO Convert to class
-// TODO Convert to class
-
 import { Readable } from 'stream';
+import { DecodedFrames, Frame, Stream } from './types';
+import { Timable, Timables } from './types/time';
 
-export default function parallelBalancer(params, streamType, numStreams) {
+export type localFrame = { pkt?: Frame, ts: number, streamIndex: number, final?: boolean, resolve?: () => void };
+type localResult = { done: boolean, value?: { name: string, frames: Timables<Frame> }[] & Timable };
+
+type parallelBalancerType = Readable & {
+    pushPkts: (packets: DecodedFrames, stream: Stream, streamIndex: number, final?: boolean) => Promise<localFrame>
+};
+
+export default function parallelBalancer(params: { name: string, highWaterMark: number }, streamType: 'video' | 'audio', numStreams: number): parallelBalancerType {
     let resolveGet = null;
     const tag = 'video' === streamType ? 'v' : 'a';
     const pending = [];
@@ -36,7 +40,7 @@ export default function parallelBalancer(params, streamType, numStreams) {
     for (let s = 0; s < numStreams; ++s)
       pending.push({ ts: -Number.MAX_VALUE, streamIndex: s });
   
-    const makeSet = resolve => {
+    const makeSet = (resolve: (result: localResult) => void) => {
       if (resolve) {
         // console.log('makeSet', pending.map(p => p.ts));
         const nextPends = pending.every(pend => pend.pkt) ? pending : null;
@@ -58,7 +62,7 @@ export default function parallelBalancer(params, streamType, numStreams) {
       }
     };
   
-    const pushPkt = async (pkt, streamIndex, ts) =>
+    const pushPkt = async (pkt: Frame, streamIndex: number, ts: number): Promise<localFrame> =>
       new Promise(resolve => {
         Object.assign(pending[streamIndex], { pkt: pkt, ts: ts, final: pkt ? false : true, resolve: resolve });
         makeSet(resolveGet);
@@ -83,14 +87,16 @@ export default function parallelBalancer(params, streamType, numStreams) {
           }
         })();
       },
-    });
+    }) as parallelBalancerType;;
   
-    (readStream as any).pushPkts = (packets, stream, streamIndex, final = false) => {
+    (readStream as any).pushPkts = (packets: DecodedFrames, stream: Stream, streamIndex: number, final = false) => {
       if (packets && packets.frames.length) {
+        // @ts-ignore
         return packets.frames.reduce(async (promise, pkt) => {
           await promise;
           const ts = pkt.pts * stream.time_base[0] / stream.time_base[1];
-          pkt.timings = packets.timings;
+        // @ts-ignore
+        pkt.timings = packets.timings;
           return pushPkt(pkt, streamIndex, ts);
         }, Promise.resolve());
       } else if (final) {
