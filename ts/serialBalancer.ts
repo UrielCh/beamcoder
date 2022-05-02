@@ -50,7 +50,7 @@ export default class serialBalancer {
     });
   };
 
-  public writePkts(
+  public async writePkts(
       packets: EncodedPackets | null,
       srcStream: { time_base: [number, number] },
       dstStream: {
@@ -60,13 +60,13 @@ export default class serialBalancer {
       writeFn: (r: Packet) => void,
       final = false): Promise<void | Packet> {
       if (packets && packets.packets.length) {
-        return packets.packets.reduce(async (promise, pkt) => {
-          await promise;
+        for (const pkt of packets.packets) {
           pkt.stream_index = dstStream.index;
           this.adjustTS(pkt, srcStream.time_base, dstStream.time_base);
           const pktTS = pkt.pts * dstStream.time_base[0] / dstStream.time_base[1];
-          return writeFn(await this.pullPkts(pkt, dstStream.index, pktTS) as Packet);
-        }, Promise.resolve());
+          const packet = await this.pullPkts(pkt, dstStream.index, pktTS) as Packet;
+          return writeFn(packet);
+        }
       } else if (final)
         return this.pullPkts(null, dstStream.index, Number.MAX_VALUE);
     };
