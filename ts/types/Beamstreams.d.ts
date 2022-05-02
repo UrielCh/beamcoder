@@ -53,15 +53,4 @@ export interface BeamstreamParams {
 		options?: { [key:string]: any }
 	}
 }
-/**
- * Initialise the sources for the beamstream process.
- * Note - the params object is updated by the function.
- */
-export function makeSources(params: BeamstreamParams): Promise<void>
-/**
- * Initialise the output streams for the beamstream process.
- * Note - the params object is updated by the function.
- * @returns Promise which resolves to an object with a run function that starts the processing
- */
-export function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<void>} >
 

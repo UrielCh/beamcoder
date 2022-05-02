@@ -25,6 +25,11 @@ import serialBalancer from './serialBalancer';
 import runStreams from './runStreams';
 import MuxerStream from './MuxerStream';
 
+/**
+ * Initialise the output streams for the beamstream process.
+ * Note - the params object is updated by the function.
+ * @returns Promise which resolves to an object with a run function that starts the processing
+ */
 export default async function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<void> }> {
   if (!params.video) params.video = [];
   if (!params.audio) params.audio = [];

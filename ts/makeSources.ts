@@ -26,6 +26,10 @@ import { BeamstreamParams, BeamstreamSource, Demuxer } from './types';
 import readStream from './readStream';
 import DemuxerStream from './DemuxerStream';
 
+/**
+ * Initialise the sources for the beamstream process.
+ * Note - the params object is updated by the function.
+ */
 export default async function makeSources(params: BeamstreamParams): Promise<void> {
   if (!params.video) params.video = [];
   if (!params.audio) params.audio = [];

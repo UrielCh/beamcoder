@@ -27,29 +27,26 @@ export { default as muxerStream } from './MuxerStream';
 export { default as DemuxerStream } from './DemuxerStream';
 export { default as MuxerStream } from './MuxerStream';
 
-import { default as demuxerStream } from './DemuxerStream';
-import { default as muxerStream } from './MuxerStream';
+export { default as makeSources } from './makeSources';
+export { default as makeStreams } from './makeStreams';
 
-import { default as makeSources } from './makeSources';
-import { default as makeStreams } from './makeStreams';
+
 
 // Provide useful debug on segfault-related crash
 import SegfaultHandler from 'segfault-handler';
 SegfaultHandler.registerHandler('crash.log');
 
-const splash = `Aerostat Beam Coder  Copyright (C) 2019  Streampunk Media Ltd
-GPL v3.0 or later license. This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions. Conditions and warranty at:
-https://github.com/Streampunk/beamcoder/blob/master/LICENSE`;
 
-console.log(splash);
-console.log('Using FFmpeg version', beamcoder.avVersionInfo());
-
-(beamcoder as any).demuxerStream = demuxerStream;
-(beamcoder as any).muxerStream = muxerStream;
-beamcoder.makeSources = makeSources;
-beamcoder.makeStreams = makeStreams;
+export function splash() {
+  const splash = `Aerostat Beam Coder  Copyright (C) 2019  Streampunk Media Ltd
+  GPL v3.0 or later license. This program comes with ABSOLUTELY NO WARRANTY.
+  This is free software, and you are welcome to redistribute it
+  under certain conditions. Conditions and warranty at:
+  https://github.com/Streampunk/beamcoder/blob/master/LICENSE`;
+  
+  console.log(splash);
+  console.log('Using FFmpeg version', beamcoder.avVersionInfo());  
+}
 
 // export { Codec, CodecContext, CodecPar, Decoder, DecodedFrames, Demuxer, EncodedPackets, Encoder, Filter, MediaType, FilterLink, FilterContext, FilterGraph, Filterer, InputFormat, OutputFormat, Frame, SampleFormat, governor, HWDeviceContext, HWFramesContext, Muxer, Packet, PrivClass, Disposition, Stream } from './types';
 export { Codec, CodecContext, CodecPar, Decoder, DecodedFrames, Demuxer, EncodedPackets, Encoder, Filter } from './types';
