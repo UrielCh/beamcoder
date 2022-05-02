@@ -19,8 +19,8 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const test = require('tape');
-const beamcoder = require('../ts');
+import test from 'tape';
+import beamcoder from '..';
 
 test('Create a packet', t => {
   let pkt = beamcoder.packet();
@@ -72,6 +72,7 @@ test('Minimal JSON serialization', t => {
 });
 
 test('Maximal JSON serialization', t => {
+  //@ts-ignore
   let pkt = beamcoder.packet({ type: 'Packet',
     pts: 42,
     dts: 43,

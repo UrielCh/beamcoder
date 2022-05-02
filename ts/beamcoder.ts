@@ -21,7 +21,7 @@
 */
 
 import bindings from 'bindings';
-import * as Beamcodere from './types';
+import type * as Beamcodere from './types';
 declare type BeamcoderType = typeof Beamcodere;
 const beamcoder = bindings('beamcoder') as BeamcoderType;
 export default beamcoder;

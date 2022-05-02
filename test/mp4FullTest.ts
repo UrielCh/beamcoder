@@ -1,7 +1,6 @@
-const test = require('tape');
-const beamcoder = require('../ts');
-const md5File = require('md5-file');
-
+import test from 'tape';
+import beamcoder from '..';
+import md5File from 'md5-file';
 
 test('recompress mp4', async t => {
   async function run() {

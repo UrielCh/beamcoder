@@ -19,23 +19,29 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const test = require('tape');
-const beamcoder = require('../ts');
+import test from 'tape';
+import beamcoder from '..';
 
-test('Creating a demuxer', async t => {
-  let dm = await beamcoder.demuxer('https://www.elecard.com/storage/video/bbb_1080p_c.ts');
-  t.ok(dm, 'is truthy.');
-  t.equal(dm.type, 'demuxer', 'type name says demuxer.');
-  t.equal(typeof dm.oformat, 'undefined', 'output format is undefined.');
-  t.ok(dm.iformat, 'has an input format.');
-  t.equal(dm.iformat.name, 'mpegts', 'input format is mpegts.');
-  t.equal(dm.streams.length, 2, 'has 2 streams.');
-  try {
-    await beamcoder.demuxer('file:jaberwocky.junk');
-    t.fail('Did not throw when opening non-existant file.');
-  } catch(e) {
-    console.log(e.message);
-    t.ok(e.message.match(/Problem opening/), 'throws opening non-existant file.');
-  }
+test('Create a filterer', async t => {
+  let flt = await beamcoder.filterer({
+    filterType: 'audio',
+    inputParams: [
+      {
+        sampleRate: 48000,
+        sampleFormat: 's16',
+        channelLayout: 'mono',
+        timeBase: [1, 48000]
+      }
+    ],
+    outputParams: [
+      {
+        sampleRate: 8000,
+        sampleFormat: 's16',
+        channelLayout: 'mono'
+      }
+    ],
+    filterSpec: 'aresample=8000, aformat=sample_fmts=s16:channel_layouts=mono'
+  });
+  t.ok(flt, 'is truthy.');
   t.end();
 });

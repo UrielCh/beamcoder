@@ -7,9 +7,9 @@
   "scripts": {
     "postinstall": "tsc -p . && node ts/install_ffmpeg.js && node-gyp rebuild",
     "build": "tsc -p .",
-    "clean": "rimraf ts/*.js ts/*.d.ts  temp.mp4",
-    "test": "tape test/*.js",
-    "retest": "npm run clean && npm run build && tape test/*.js",
+    "clean": "rimraf ts/*.js ts/*.d.ts temp.mp4",
+    "test": "ts-node node_modules/tape/bin/tape  test/*.ts",
+    "retest": "npm run clean && npm run build && npm run test",
     "lint": "eslint **/*.js",
     "lint-html": "eslint **/*.js -f html -o ./reports/lint-results.html",
     "lint-fix": "eslint --fix **/*.js"

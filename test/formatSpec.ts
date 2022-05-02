@@ -19,10 +19,11 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const test = require('tape');
-const beamcoder = require('../ts');
+import test from 'tape';
+import beamcoder from '..';
 
-const isExternal = o => Object.toString(o).indexOf('native code') >= 0;
+const isExternal = (o: any) => (Object as any).toString(o).indexOf('native code') >= 0;
+// const isExternal = o => Object.toString(o).indexOf('native code') >= 0;
 
 test('Creating a format', t => {
   let fmt = beamcoder.format();
@@ -39,7 +40,8 @@ test('Creating a format', t => {
   t.end();
 });
 
-const stripNewStream = ({ newStream, ...others }) => ({ ...others }); // eslint-disable-line no-unused-vars
+// @ts-ignore
+const stripNewStream = ({ newStream, ...others }) => ({ ...others });
 
 test('Minimal JSON serialization', t => {
   let fmt = beamcoder.format();
@@ -306,8 +308,8 @@ test('Test minimal JSON stream', t => {
   let fmt2 = beamcoder.format(JSON.stringify(fmt));
   t.ok(fmt2, 'construction of new format form JSON is truthy.');
   t.equal(fmt2.streams.length, 3, 'has expected number of streams.');
-  t.deepEqual(fmt2.streams.map(JSON.stringify).map(JSON.parse),
-    [s1, s2, s3].map(JSON.stringify).map(JSON.parse), 'has expected streams.');
+  t.deepEqual(fmt2.streams.map(d => JSON.stringify(d)).map(s => JSON.parse(s)),
+    [s1, s2, s3].map(d => JSON.stringify(d)).map(s => JSON.parse(s)), 'has expected streams.');
 
   t.throws(() => fmt2.streams = [], /construction/,
     'cannot set streams after construction.');

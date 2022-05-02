@@ -48,4 +48,4 @@ console.log('Using FFmpeg version', beamcoder.avVersionInfo());
 beamcoder.makeSources = makeSources;
 beamcoder.makeStreams = makeStreams;
 
-module.exports = beamcoder;
+export default beamcoder;
