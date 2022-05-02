@@ -1,6 +1,7 @@
 /*
   Aerostat Beam Coder - Node.js native bindings to FFmpeg.
   Copyright (C) 2019  Streampunk Media Ltd.
+  Copyright (C) 2022 Chemouni Uriel.
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,15 +20,17 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const os = require('os');
-const fs = require('fs');
-const util = require('util');
-const https = require('https');
-const cp = require('child_process');
-const [ mkdir, access, rename, execFile, exec ] = // eslint-disable-line
-  [ fs.mkdir, fs.access, fs.rename, cp.execFile, cp.exec ].map(util.promisify);
+import os from 'os';
+import fs from 'fs';
+import util from 'util';
+import https from 'https';
+import child_process, { ChildProcess } from 'child_process';
 
-async function get(ws, url, name): Promise<void> {
+const { mkdir, access, rename } = fs.promises;
+
+const [ execFile, exec ] = [ child_process.execFile, child_process.exec ].map(util.promisify);
+
+async function get(ws: NodeJS.WritableStream, url: string, name: string): Promise<void> {
   let received = 0;
   let totalLength = 0;
   return new Promise((comp, err) => {
@@ -37,7 +40,7 @@ async function get(ws, url, name): Promise<void> {
       } else {
         res.pipe(ws);
         if (totalLength == 0) {
-          totalLength = +res.headers['content-length'];
+          totalLength = +(res.headers['content-length'] as string);
         }
         res.on('end', () => {
           process.stdout.write(`Downloaded 100% of '${name}'. Total length ${received} bytes.\n`);
@@ -53,14 +56,14 @@ async function get(ws, url, name): Promise<void> {
   });
 }
 
-async function getHTML(url, name): Promise<Buffer> {
+async function getHTML(url: string, name: string): Promise<Buffer> {
   let received = 0;
   let totalLength = 0;
   return new Promise((resolve, reject) => {
     https.get(url, res => {
-      const chunks = [];
+      const chunks: Array<Uint8Array> = [];
       if (totalLength == 0) {
-        totalLength = +res.headers['content-length'];
+        totalLength = +(res.headers['content-length'] as string);
       }
       res.on('end', () => {
         process.stdout.write(`Downloaded 100% of '${name}'. Total length ${received} bytes.\n`);
@@ -76,23 +79,22 @@ async function getHTML(url, name): Promise<Buffer> {
   });
 }
 
-async function inflate(rs, folder, name): Promise<void> {
+async function inflate(rs: NodeJS.ReadableStream, folder: string, name: string): Promise<void> {
   const unzip = require('unzipper');
   const directory = await unzip.Open.file(`${folder}/${name}.zip`);
   const directoryName = directory.files[0].path;
   return new Promise((comp, err) => {
     console.log(`Unzipping '${folder}/${name}.zip'.`);
-    rs.pipe(unzip.Extract({ path: folder }).on('close', () => {
-      fs.rename(`./${folder}/${directoryName}`, `./${folder}/${name}`, () => {
-        console.log(`Unzipping of '${folder}/${name}.zip' completed.`);
-        comp();
-      });
+    rs.pipe(unzip.Extract({ path: folder }).on('close', async () => {
+      await rename(`./${folder}/${directoryName}`, `./${folder}/${name}`)
+      console.log(`Unzipping of '${folder}/${name}.zip' completed.`);
+      comp();
     }));
     rs.on('error', err);
   });
 }
 
-async function win32() {
+async function win32(): Promise<void> {
   console.log('Checking/Installing FFmpeg dependencies for Beam Coder on Windows.');
 
   await mkdir('ffmpeg').catch(e => {
@@ -129,7 +131,7 @@ async function win32() {
   });
 }
 
-async function linux() {
+async function linux(): Promise<number> {
   console.log('Checking FFmpeg dependencies for Beam Coder on Linux.');
   const { stdout } = await execFile('ldconfig', ['-p']).catch(console.error);
   let result = 0;
@@ -176,16 +178,16 @@ sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev libavfilter-
   return result;
 }
 
-async function darwin() {
+async function darwin(): Promise<0> {
   console.log('Checking for FFmpeg dependencies via HomeBrew.');
-  let output;
-  let returnMessage;
+  let output: ChildProcess;
+  let returnMessage: string;
   
   try {
     output = await exec('brew list ffmpeg');
     returnMessage = 'FFmpeg already present via Homebrew.';
   } catch (err) {
-    if (err.stderr !== 'Error: No such keg: /usr/local/Cellar/ffmpeg\n') {
+    if ((err as { stderr: string }).stderr !== 'Error: No such keg: /usr/local/Cellar/ffmpeg\n') {
       console.error(err);
       console.log('Either Homebrew is not installed or something else is wrong.\nExiting');
       process.exit(1);
