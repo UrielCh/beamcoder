@@ -10,7 +10,7 @@ export function runStreams(streamType, sources, filterer, streams, mux, muxBalan
         return resolve(undefined);
   
       const timeBaseStream = sources[0].format.streams[sources[0].streamIndex];
-      const filterBalancer = parallelBalancer({ name: 'filterBalance', highWaterMark : 1 }, streamType, sources.length);
+      const filterBalancer = new parallelBalancer({ name: 'filterBalance', highWaterMark : 1 }, streamType, sources.length);
   
       sources.forEach((src, srcIndex) => {
         const decStream = transformStream({ name: 'decode', highWaterMark : 1 },

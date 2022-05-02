@@ -4,9 +4,10 @@ import { Frame } from "./Frame"
 import { Codec } from "./Codec"
 import { CodecContext } from "./CodecContext"
 import { Demuxer } from "./Demuxer"
+import { Timable, TotalTimeed } from "./time"
 
 /** The DecodedFrames object is returned as the result of a decode operation */
-export interface DecodedFrames {
+export interface DecodedFrames extends Timable, TotalTimeed {
 	/** Object name. */
 	readonly type: 'frames'
   /** 
@@ -15,7 +16,7 @@ export interface DecodedFrames {
 	 */
 	readonly frames: Array<Frame>
 	/** Total time in microseconds that the decode operation took to complete */
-	readonly total_time: number
+	// readonly total_time: number
 }
 
 export interface Decoder extends Omit<CodecContext,
