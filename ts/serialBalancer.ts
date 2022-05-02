@@ -20,7 +20,7 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-import { EncodedPackets, Packet } from "./types";
+import { EncodedPackets, Packet, Stream } from "./types";
 
 export default class serialBalancer {
   pending: { ts: number, streamIndex: number, resolve?: (result: any) => void, pkt?: Packet | null }[] = [];
@@ -52,12 +52,9 @@ export default class serialBalancer {
 
   public async writePkts(
       packets: EncodedPackets | null,
-      srcStream: { time_base: [number, number] },
-      dstStream: {
-        time_base: [number, number],
-        index: number
-      },
-      writeFn: (r: Packet) => void,
+      srcStream: Stream,
+      dstStream: Stream,
+      writeFn: (r: Packet) => Promise<void>,
       final = false): Promise<void | Packet> {
       if (packets && packets.packets.length) {
         for (const pkt of packets.packets) {
@@ -65,7 +62,7 @@ export default class serialBalancer {
           this.adjustTS(pkt, srcStream.time_base, dstStream.time_base);
           const pktTS = pkt.pts * dstStream.time_base[0] / dstStream.time_base[1];
           const packet = await this.pullPkts(pkt, dstStream.index, pktTS) as Packet;
-          return writeFn(packet);
+          await writeFn(packet);
         }
       } else if (final)
         return this.pullPkts(null, dstStream.index, Number.MAX_VALUE);

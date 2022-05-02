@@ -44,7 +44,7 @@ export default function runStreams(
     filterer: Filterer,
     streams: Array<BeamstreamStream>,
     mux: Muxer,
-    muxBalancer: any /*serialBalancer*/ ): Promise<void> {
+    muxBalancer: serialBalancer): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (!sources.length)
         return resolve();
