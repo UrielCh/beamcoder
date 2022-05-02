@@ -161,6 +161,6 @@ export interface Stream extends toJSONAble {
    */
   codecpar: CodecPar
 
-  /** Retun a JSON string containing the object properties. */
-  toJSON(): string
+  // native code;
+  readonly _stream: {};
 }

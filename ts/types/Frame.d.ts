@@ -182,7 +182,7 @@ export interface Frame extends Timable, toJSONAble {
  * Create a frame for encoding or filtering
  * Set parameters as required from the Frame object
  */
-export function frame(options: { [key: string]: any, data?: Array<Buffer> } | string): Frame
+export function frame(options?: { [key: string]: any, data?: Array<Buffer> } | string): Frame
 
 /** Pixel format description */
 export interface PixelFormat {

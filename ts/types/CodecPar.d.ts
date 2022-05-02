@@ -1,7 +1,9 @@
+import { toJSONAble } from "./time"
+
 /**
  * CodecPar describes the properties of an encoded stream.
  */
-export interface CodecPar {
+export interface CodecPar extends toJSONAble {
 	/** Object name. */
   readonly type: 'CodecParameters'
 	/** General type of the encoded data. */
@@ -101,8 +103,10 @@ export interface CodecPar {
 	trailing_padding: number
 	/** Audio only. Number of samples to skip after a discontinuity. */
 	seek_preroll: number
-	/** Retun a JSON string containing the object properties. */
-	toJSON(): string
+	// native code;
+	readonly _codecPar: {};
+
 }
 
-export function codecParameters(options?: { [key: string]: any }): CodecPar;
+export function codecParameters(options?: string | { [key: string]: any }): CodecPar;
+//                             (options?: string | Partial<Omit<CodecPar, 'type' | '_codecPar' | 'toJSON'>>)

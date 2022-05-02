@@ -13,6 +13,9 @@ import { Timable, toJSONAble } from "./time"
 export interface Packet extends Timable, toJSONAble {
 	/** Object name. */
 	readonly type: 'Packet'
+	// internal data
+	readonly _packet: {};
+
 	/**
 	 * Presentation timestamp in AVStream->time_base units the time at which
 	 * the decompressed packet will be presented to the user.
@@ -81,4 +84,4 @@ export interface Packet extends Timable, toJSONAble {
  * Packets for decoding can be created without reading them from a demuxer
  * Set parameters as required from the Packet object, passing in a buffer and the required size in bytes
  */
-export function packet(options: { [key: string]: any, data: Buffer, size: number }): Packet
+export function packet(options?:string | { [key: string]: any, data: Buffer, size: number }): Packet

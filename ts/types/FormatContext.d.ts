@@ -131,10 +131,14 @@ export function guessFormat(name: string): OutputFormat | null;
 export interface FormatContext {
 	/** Object name. */
 	readonly type: string
-	/** The input format description. */
-	iformat: InputFormat
+    /** The input format description. */
+    set iformat(format: string);
+    //@ts-ignore
+    get iformat(): InputFormat
 	/** The output format description. */
-	oformat: OutputFormat
+	set oformat(format: string);
+	// @ts-ignore
+	get oformat(): OutputFormat
 	/** Format private data. */
 	priv_data: {
 		[key: string]: any
@@ -366,7 +370,7 @@ export interface FormatContext {
 	 * to be initialised in the Stream object
 	 * @returns A Stream object
 	 */
-	newStream(options: { name: string, [key: string]: any	}): Stream
+	newStream(options: stinrg | { name: string, [key: string]: any	}): Stream
   /**
 	 * Add a stream to the format with the next available stream index.
 	 * @param stream Source stream from which to copy the parameters for the new stream
@@ -377,4 +381,4 @@ export interface FormatContext {
   toJSON(): string
 }
 
-export function format(options: { [key: string]: any }): FormatContext
+export function format(options?: string | { [key: string]: any }): FormatContext

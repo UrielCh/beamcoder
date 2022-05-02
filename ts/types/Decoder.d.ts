@@ -100,6 +100,8 @@ export interface Decoder extends Omit<CodecContext,
 	 * @returns the modified Decoder object
    */
 	useParams(params: CodecPar): Decoder
+	// private field
+	readonly _CodecContext: {}
 }
 
 /**

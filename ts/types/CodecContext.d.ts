@@ -552,4 +552,6 @@ export interface CodecContext {
 		* used as reference pictures).
 		*/
 	extra_hw_frames: number
+	// private field
+	readonly _CodecContext: {};
 }
