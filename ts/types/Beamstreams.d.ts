@@ -64,12 +64,17 @@ export interface BeamstreamSource {
 
 	format?: Demuxer; // filled by makeSources
 	stream?: Readable; // filled by makeSources
+	decoder?: Decoder; // FIXME
 }
 /** Codec definition for the destination channel */
 export interface BeamstreamStream {
 	name: string
 	time_base: Array<number>
 	codecpar: { [key: string]: any }
+
+	encoder?: Encoder; 	// filled by runStreams
+	stream?: Stream;	// filled by runStreams
+
 }
 /** Definition for a channel of beamstream processing */
 export interface BeamstreamChannel {

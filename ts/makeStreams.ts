@@ -22,7 +22,7 @@
 import beamcoder from './beamcoder'
 import { BeamstreamParams } from './types';
 import serialBalancer from './serialBalancer';
-import { runStreams } from './runStreams';
+import runStreams from './runStreams';
 
 export default async function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<void>} > {
   params.video.forEach(p => {
