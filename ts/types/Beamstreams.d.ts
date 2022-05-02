@@ -81,6 +81,7 @@ export interface BeamstreamChannel {
 	sources: Array<BeamstreamSource>
 	filterSpec: string
 	streams: Array<BeamstreamStream>
+	filter?: Filterer; // filled by makeStreams
 }
 /**
  * Definition for a beamstream process consisting of a number of audio and video sources
