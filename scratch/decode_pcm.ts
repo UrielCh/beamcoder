@@ -19,18 +19,22 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const beamcoder = require('../ts');
+import beamcoder from '..';
 
 async function run() {
-  let demuxer = await beamcoder.demuxer('../media/bbb_1080p_c.ts');
-  console.log(demuxer);
-  let decoder = await beamcoder.decoder({ name: 'hevc' });
+  let demuxer = await beamcoder.demuxer('../media/dpp/AS11_DPP_HD_EXAMPLE_1.mxf');
+  console.log('streams cnt:', demuxer.streams.length);
+  let decoder = await beamcoder.decoder({ demuxer: demuxer, stream_index : 1 });
+  console.log('decoder type:', decoder.type);
   for ( let x = 0 ; x < 100 ; x++ ) {
     let packet = await demuxer.read();
-    if (packet.stream_index == 0) {
-      // console.log(packet);
-      let frames = await decoder.decode(packet); // eslint-disable-line
-    //  console.log(frames);
+    if (packet.stream_index == 1) {
+      //console.log(packet);
+      let frames = await decoder.decode(packet);
+      console.log(`i: ${x} total framews: ${frames.frames.length}`);
+      console.log(`nb Channels: ${frames.frames[0].channels}`);
+      console.log(`channel_layout: ${frames.frames[0].channel_layout}`);
+      console.log(`sample_rate: ${frames.frames[0].sample_rate}`);
     }
   }
 }

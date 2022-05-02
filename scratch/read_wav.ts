@@ -19,20 +19,17 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const beamcoder = require('../ts');
+import beamcoder from '..';
 
 async function run() {
-  let demuxer = await beamcoder.demuxer({ url: '../media/bbb_1080p_c.ts'});
-  let decoder = beamcoder.decoder({ name: 'aac' });
+  let demuxer = await beamcoder.demuxer('../../media/sound/BBCNewsCountdown.wav');
   let packet = {};
-  for ( let x = 0 ; packet !== null && x < 100 ; x++ ) {
+  for ( let x = 0 ; x < 100 && packet !== null ; x++ ) {
     packet = await demuxer.read();
-    if (packet.stream_index == 1) {
-      console.log(JSON.stringify(packet, null, 2));
-      let frames = await decoder.decode(packet);
-      console.log(JSON.stringify(frames.frames[0], null, 2));
-    }
+    console.log(x, JSON.stringify(packet));
   }
+  console.log(await demuxer.seek({ frame : 120 }));
+  console.log(await demuxer.read());
 }
 
 run();

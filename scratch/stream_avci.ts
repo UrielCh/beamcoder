@@ -19,13 +19,13 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const beamcoder = require('../ts');
-const fs = require('fs');
+import beamcoder, { DemuxerStream, Packet } from '..';
+import fs from 'fs';
 // const util = require('util');
 
 async function run() {
   // let demuxer = await createDemuxer('../../media/dpp/AS11_DPP_HD_EXAMPLE_1.mxf');
-  let demuxerStream = beamcoder.demuxerStream({ highwaterMark: 65536 });
+  let demuxerStream = new DemuxerStream({ highwaterMark: 65536 });
   fs.createReadStream('../../media/dpp/AS11_DPP_HD_EXAMPLE_1.mxf').pipe(demuxerStream);
   let demuxer = await demuxerStream.demuxer({});
   // console.log(demuxer);
@@ -80,8 +80,8 @@ async function run() {
     width: 1280,
     height: 720,
     // bit_rate: 10000000,
-    time_base: [1, 25],
-    framerate: [25, 1],
+    time_base: [1, 25] as [number, number],
+    framerate: [25, 1] as [number, number],
     // gop_size: 50,
     // max_b_frames: 1,
     pix_fmt: 'yuv422p',
@@ -100,7 +100,7 @@ async function run() {
 
   // await demuxer.seek({ frame: 4200, stream_index: 0});
 
-  let packet = {};
+  let packet = {} as Packet;
   for ( let x = 0 ; x < 10 && packet !== null; x++ ) {
     packet = await demuxer.read();
     if (packet.stream_index == 0) {

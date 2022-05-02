@@ -19,25 +19,46 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-const beamcoder = require('../ts');
+import beamcoder from '..';
+import md5File from 'md5-file';
 
 async function run() {
-  const urls = [ 'file:../Media/sound/Countdown.wav' ];
-  const spec = { start: 50, end: 58 };
+  const sumSrc = await md5File('../../Media/big_buck_bunny_1080p_h264.mov');
+
+  if (sumSrc !== 'c23ab2ff12023c684f46fcc02c57b585')
+    throw ('invalid Src md5');
+
+  const urls = [ 'file:../../Media/big_buck_bunny_1080p_h264.mov' ];
+  const spec = { start: 0, end: 24 };
+
   const params = {
-    video: [],
-    audio: [
+    video: [
       {
         sources: [
           { url: urls[0], ms: spec, streamIndex: 0 }
         ],
-        filterSpec: '[in0:a] \
-                     volume=precision=float:volume=0.8 \
-                     [out0:a]',
+        filterSpec: '[in0:v] scale=1280:720, colorspace=all=bt709 [out0:v]',
+        streams: [
+          { name: 'h264', time_base: [1, 90000],
+            codecpar: {
+              width: 1280, height: 720, format: 'yuv422p', color_space: 'bt709',
+              sample_aspect_ratio: [1, 1]
+            }
+          }
+        ]
+      }
+    ],
+    audio: [
+      {
+        sources: [
+          { url: urls[0], ms: spec, streamIndex: 2 }
+        ],
+        filterSpec: '[in0:a] aformat=sample_fmts=fltp:channel_layouts=mono [out0:a]',
         streams: [
           { name: 'aac', time_base: [1, 90000],
             codecpar: {
-              sample_rate: 48000, format: 'fltp', channel_layout: 'stereo'
+              sample_rate: 48000, format: 'fltp', frame_size: 1024,
+              channels: 1, channel_layout: 'mono'
             }
           }
         ]
@@ -51,10 +72,15 @@ async function run() {
 
   await beamcoder.makeSources(params);
   const beamStreams = await beamcoder.makeStreams(params);
+
   await beamStreams.run();
+
+  const sumDest = await md5File('temp.mp4');
+  if (sumDest !== 'f08742dd1982073c2eb01ba6faf86d63')
+    throw ('invalid Src md5, get: ' + sumDest);
 }
 
-console.log('Running wav maker');
+console.log('Running mp4 maker');
 let start = Date.now();
 run()
   .then(() => console.log(`Finished ${Date.now() - start}ms`))

@@ -24,6 +24,9 @@ import beamcoder from './beamcoder';
 export { default as demuxerStream } from './DemuxerStream';
 export { default as muxerStream } from './MuxerStream';
 
+export { default as DemuxerStream } from './DemuxerStream';
+export { default as MuxerStream } from './MuxerStream';
+
 import { default as demuxerStream } from './DemuxerStream';
 import { default as muxerStream } from './MuxerStream';
 
@@ -47,5 +50,11 @@ console.log('Using FFmpeg version', beamcoder.avVersionInfo());
 (beamcoder as any).muxerStream = muxerStream;
 beamcoder.makeSources = makeSources;
 beamcoder.makeStreams = makeStreams;
+
+// export { Codec, CodecContext, CodecPar, Decoder, DecodedFrames, Demuxer, EncodedPackets, Encoder, Filter, MediaType, FilterLink, FilterContext, FilterGraph, Filterer, InputFormat, OutputFormat, Frame, SampleFormat, governor, HWDeviceContext, HWFramesContext, Muxer, Packet, PrivClass, Disposition, Stream } from './types';
+export { Codec, CodecContext, CodecPar, Decoder, DecodedFrames, Demuxer, EncodedPackets, Encoder, Filter } from './types';
+export { MediaType, FilterLink, FilterContext, FilterGraph, Filterer, InputFormat, OutputFormat, Frame } from './types';
+export { SampleFormat, HWDeviceContext, HWFramesContext, Muxer, Packet, PrivClass, Disposition, Stream } from './types';
+export type { governor} from './types';
 
 export default beamcoder;
