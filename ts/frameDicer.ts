@@ -47,7 +47,7 @@ export default class frameDicer {
     let dstFrm: Frame;
     let curStart = 0;
     if (!this.lastFrm) {
-      this.lastFrm = beamcoder.frame(srcFrm.toJSON()) as Frame;
+      this.lastFrm = beamcoder.frame(srcFrm.toJSON());
       this.lastBuf = this.nullBuf;
       this.dstFrmBytes = this.dstNumSamples * this.sampleBytes;
     }
