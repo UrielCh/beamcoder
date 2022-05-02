@@ -20,57 +20,54 @@
   14 Ormiscaig, Aultbea, Achnasheen, IV22 2JJ  U.K.
 */
 
-// TODO Convert to class
-// TODO Convert to class
-// TODO Convert to class
-// TODO Convert to class
-
 import { EncodedPackets, Packet } from "./types";
 
-export default function serialBalancer(numStreams: number) {
-    let pending = [] as { ts: number, streamIndex: number, resolve?: (result: any) => void, pkt?: Packet | null }[];
+export default class serialBalancer {
+  pending: { ts: number, streamIndex: number, resolve?: (result: any) => void, pkt?: Packet | null }[] = [];
+
+  constructor(numStreams: number) {
     // initialise with negative ts and no pkt
     // - there should be no output until each stream has sent its first packet
     for (let s = 0; s < numStreams; ++s)
-      pending.push({ ts: -Number.MAX_VALUE, streamIndex: s });
-  
-    const adjustTS = (pkt:{ pts: number, dts: number, duration: number }, srcTB: [number, number], dstTB: [number, number]) => {
-      const adj = (srcTB[0] * dstTB[1]) / (srcTB[1] * dstTB[0]);
-      pkt.pts = Math.round(pkt.pts * adj);
-      pkt.dts = Math.round(pkt.dts * adj);
-      pkt.duration > 0 ? Math.round(pkt.duration * adj) : Math.round(adj);
-    };
-      
-    const pullPkts = (pkt: null | Packet, streamIndex: number, ts: number): Promise<void | Packet> => {
-      return new Promise(resolve => {
-        Object.assign(pending[streamIndex], { pkt: pkt, ts: ts, resolve: resolve });
-        const minTS = pending.reduce((acc, pend) => Math.min(acc, pend.ts), Number.MAX_VALUE);
-        // console.log(streamIndex, pending.map(p => p.ts), minTS);
-        const nextPend = pending.find(pend => pend.pkt && (pend.ts === minTS));
-        if (nextPend) nextPend.resolve(nextPend.pkt);
-        if (!pkt) resolve(undefined);
-      });
-    };
-  
-    this.writePkts = (
-        packets: EncodedPackets | null,
-        srcStream: { time_base: [number, number] },
-        dstStream: {
-            time_base: [number, number],
-            index: number
-        },
-        writeFn: (r: Packet) => void,
-        final = false): Promise<void | Packet> => {
+      this.pending.push({ ts: -Number.MAX_VALUE, streamIndex: s });
+  }
+
+  private adjustTS(pkt: { pts: number, dts: number, duration: number }, srcTB: [number, number], dstTB: [number, number]) {
+    const adj = (srcTB[0] * dstTB[1]) / (srcTB[1] * dstTB[0]);
+    pkt.pts = Math.round(pkt.pts * adj);
+    pkt.dts = Math.round(pkt.dts * adj);
+    pkt.duration > 0 ? Math.round(pkt.duration * adj) : Math.round(adj);
+  };
+
+  private pullPkts(pkt: null | Packet, streamIndex: number, ts: number): Promise<void | Packet> {
+    return new Promise(resolve => {
+      Object.assign(this.pending[streamIndex], { pkt: pkt, ts: ts, resolve: resolve });
+      const minTS = this.pending.reduce((acc, pend) => Math.min(acc, pend.ts), Number.MAX_VALUE);
+      // console.log(streamIndex, pending.map(p => p.ts), minTS);
+      const nextPend = this.pending.find(pend => pend.pkt && (pend.ts === minTS));
+      if (nextPend) nextPend.resolve(nextPend.pkt);
+      if (!pkt) resolve(undefined);
+    });
+  };
+
+  public writePkts(
+      packets: EncodedPackets | null,
+      srcStream: { time_base: [number, number] },
+      dstStream: {
+        time_base: [number, number],
+        index: number
+      },
+      writeFn: (r: Packet) => void,
+      final = false): Promise<void | Packet> {
       if (packets && packets.packets.length) {
         return packets.packets.reduce(async (promise, pkt) => {
           await promise;
           pkt.stream_index = dstStream.index;
-          adjustTS(pkt, srcStream.time_base, dstStream.time_base);
+          this.adjustTS(pkt, srcStream.time_base, dstStream.time_base);
           const pktTS = pkt.pts * dstStream.time_base[0] / dstStream.time_base[1];
-          return writeFn(await pullPkts(pkt, dstStream.index, pktTS) as Packet);
+          return writeFn(await this.pullPkts(pkt, dstStream.index, pktTS) as Packet);
         }, Promise.resolve());
       } else if (final)
-        return pullPkts(null, dstStream.index, Number.MAX_VALUE);
+        return this.pullPkts(null, dstStream.index, Number.MAX_VALUE);
     };
   }
-  
