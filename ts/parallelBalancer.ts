@@ -92,20 +92,19 @@ export default class parallelBalancer extends Readable {
 
   public async pushPkts(packets: DecodedFrames, stream: Stream, streamIndex: number, final = false): Promise<localFrame> {
     if (packets && packets.frames.length) {
-      // let lst: localFrame = {} as localFrame;
-      // for (const pkt of packets.frames) {
-      //     const ts = pkt.pts * stream.time_base[0] / stream.time_base[1];
-      //     pkt.timings = packets.timings;
-      //     lst = await this.pushPkt(pkt, streamIndex, ts);
-      // }
-      // return lst;
-
-      return packets.frames.reduce(async (promise, pkt) => {
-        await promise;
+      let lst: localFrame = { ts: -Number.MAX_VALUE, streamIndex: 0 };
+      for (const pkt of packets.frames) {
         const ts = pkt.pts * stream.time_base[0] / stream.time_base[1];
         pkt.timings = packets.timings;
-        return this.pushPkt(pkt, streamIndex, ts);
-      }, Promise.resolve(null as localFrame));
+        lst = await this.pushPkt(pkt, streamIndex, ts);
+      }
+      return lst;
+      // return packets.frames.reduce(async (promise, pkt) => {
+      //   await promise;
+      //   const ts = pkt.pts * stream.time_base[0] / stream.time_base[1];
+      //   pkt.timings = packets.timings;
+      //   return this.pushPkt(pkt, streamIndex, ts);
+      // }, Promise.resolve({ ts: -Number.MAX_VALUE, streamIndex: 0 }));
     } else if (final) {
       return this.pushPkt(null, streamIndex, Number.MAX_VALUE);
     }
