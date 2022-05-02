@@ -26,6 +26,9 @@ import runStreams from './runStreams';
 import MuxerStream from './MuxerStream';
 
 export default async function makeStreams(params: BeamstreamParams): Promise<{ run(): Promise<void> }> {
+  if (!params.video) params.video = [];
+  if (!params.audio) params.audio = [];
+
   params.video.forEach((channel: BeamstreamChannel) => {
     channel.sources.forEach((src: BeamstreamSource) =>
       src.decoder = beamcoder.decoder({ demuxer: src.format, stream_index: src.streamIndex }));
