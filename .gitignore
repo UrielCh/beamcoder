@@ -76,3 +76,4 @@ ffmpeg/
 scratch/wibble.h264
 ts/*.d.ts
 ts/*.js
+examples/pnpm-lock.yaml

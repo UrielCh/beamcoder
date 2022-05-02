@@ -85,11 +85,12 @@ export function encoders(): { [key: string]: Codec }
  * @param ... Any non-readonly parameters from the Encoder object as required
  * @returns An Encoder object - note creation is synchronous
  */
-export function encoder(options: { name: string, [key: string]: any }): Encoder
+// export function encoder(options: { name: string, [key: string]: any }): Encoder
+export function encoder(options: { name: string } & Partial<Omit<CodecContext, 'codec_id'>>): Encoder
 /**
  * Create an encoder by codec_id
  * @param codec_id The codec ID from AV_CODEC_ID_xxx
  * @param ... Any non-readonly parameters from the Encoder object as required
  * @returns An Encoder object - note creation is synchronous
  */
-export function encoder(options: { codec_id: number, [key: string]: any }): Encoder
+export function encoder(options: { codec_id: number } & Partial<Omit<CodecContext, 'name'>>): Encoder

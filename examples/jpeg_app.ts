@@ -24,12 +24,35 @@
    Only supports 8-bit YUV 4:2:2 or 4:2:0 pixel formats.
 */
 
-const beamcoder = require('../ts'); // Use require('beamcoder') externally
-const Koa = require('koa'); // Add koa to package.json dependencies
+import beamcoder from '..'; // Use require('beamcoder') externally
+import Koa from 'koa'; // Add koa to package.json dependencies
+import fs from 'fs';
+import path from 'path';
 const app = new Koa();
 
 app.use(async (ctx) => { // Assume HTTP GET with path /<file_name>/<time_in_s>
+
+  if (ctx.path === '/') {
+    let list = await fs.promises.readdir('.')
+    list = list.filter(a=> a.toLowerCase().endsWith('.mp4'));
+    ctx.type = 'text/html';
+    ctx.body = `<html><body>
+    currenty available files: <ul>${list.map(f => `<li><a href="${f}/1">${f}</a></li>`).join(' ')}</ul>
+    Add files in : <b>${path.resolve('.')}</b> for more tests
+    </body></html>`;
+    return;
+  }
+
   let parts = ctx.path.split('/'); // Split the path into filename and time
+  if ((parts.length < 3) || (isNaN(+parts[2]))) {
+    ctx.status = 404;
+    ctx.type = 'text/html';
+    ctx.body = `<html><body>
+    expected path: /<file_name>/<time_in_s>
+    </body></html>`;
+    return; // Ignore favicon etc..
+  }
+
   if ((parts.length < 3) || (isNaN(+parts[2]))) return; // Ignore favicon etc..
   let dm = await beamcoder.demuxer('file:' + parts[1]); // Probe the file
   await dm.seek({ time: +parts[2] }); // Seek to the closest keyframe to time
@@ -53,3 +76,4 @@ app.use(async (ctx) => { // Assume HTTP GET with path /<file_name>/<time_in_s>
 });
 
 app.listen(3000); // Start the server on port 3000
+console.log('listening port 3000');

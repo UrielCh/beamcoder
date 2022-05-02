@@ -96,7 +96,7 @@ export interface FilterLink {
 	/** video only - agreed upon image height */
 	readonly h?: number
 	/** video only - agreed upon sample aspect ratio */
-	readonly sample_aspect_ratio?: ReadonlyArray<number>
+	readonly sample_aspect_ratio?: [number, number]; // ReadonlyArray<number>
 	/** audio only - number of channels in the channel layout. */
 	readonly channel_count?: number
 	/** audio only - channel layout of current buffer */
@@ -232,7 +232,7 @@ export interface Filterer extends Timable {
 	 * @param framesArr Array of objects with name and Frame array for each input pad
 	 * @returns Array of objects containing Frame arrays for each output pad of the filter
    */
-	filter(framesArr: Array<{ name: string, frames: Array<Frame> }>): Promise<Array<FiltererResult> & { total_time: number }>
+	filter(framesArr: Array<{ name?: string, frames: Array<Frame> }>): Promise<Array<FiltererResult> & { total_time: number }>
 	
 	// may add a callback
 	cb?: (pts: number | null) => void;

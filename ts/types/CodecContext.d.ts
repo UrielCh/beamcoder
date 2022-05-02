@@ -65,7 +65,7 @@ export interface CodecContext {
 	 * vop_time_increment_resolution and fixed_vop_rate
 	 * (fixed_vop_rate == 0 implies that it is different from the framerate)
    */
-	time_base: Array<number>
+	time_base: [number, number]
 	/**
 	 * For some codecs, the time base is closer to the field rate than the frame rate.
 	 * Most notably, H.264 and MPEG-2 specify time_base as half of frame duration
@@ -407,7 +407,7 @@ export interface CodecContext {
    * For codecs that store a framerate value in the compressed
    * bitstream, the decoder may export it here. [ 0, 1 ] when unknown.
 	 */
-	framerate: Array<number>
+	framerate: [number, number]
   /** Nominal unaccelerated pixel format, see AV_PIX_FMT_xxx. */
 	readonly sw_pix_fmt: string | null
   /** Timebase in which pkt_dts/pts and Packet dts/pts are. */

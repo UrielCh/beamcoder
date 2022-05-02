@@ -24,8 +24,8 @@
    Will convert source pixel formats to 8-bit YUV 4:2:2
 */
 
-const beamcoder = require('../ts'); // Use require('beamcoder') externally
-const Koa = require('koa'); // Add koa to package.json dependencies
+import beamcoder from '..'; // Use require('beamcoder') externally
+import Koa from 'koa'; // Add koa to package.json dependencies
 const app = new Koa();
 
 app.use(async (ctx) => { // Assume HTTP GET with path /<file_name>/<time_in_s>
@@ -69,7 +69,8 @@ app.use(async (ctx) => { // Assume HTTP GET with path /<file_name>/<time_in_s>
       channelLayout: 'mono' }],
     filterSpec: 'aresample=1024' });
 
-  const audFiltPkt = await audFilt.filter([{ frames: afrm }]);
+  const audFiltPkt = await audFilt.filter([{ frames: afrm.frames }]);
+  // const audFiltPkt = await audFilt.filter([{ frames: afrm }]);
   const encPkt = await audEnc.encode(audFiltPkt[0].frames[0]);
   console.log(encPkt);
 
@@ -82,9 +83,10 @@ app.use(async (ctx) => { // Assume HTTP GET with path /<file_name>/<time_in_s>
       pixelFormat: vstr.codecpar.format,
       timeBase: vstr.time_base,
       pixelAspect: vstr.sample_aspect_ratio }],
-    outputParams: [{ pixelFormat: 'yuv422p' }],
-    filterSpec: 'scale=640:360, colorspace=range=jpeg:all=bt709' });
-  let filtResult = await filt.filter([{ frames: decResult }]); // Filter the frame
+      outputParams: [{ pixelFormat: 'yuv422p' }],
+      filterSpec: 'scale=640:360, colorspace=range=jpeg:all=bt709' });
+    // let filtResult = await filt.filter([{ frames: decResult }]); // Filter the frame
+  let filtResult = await filt.filter([{ frames: decResult.frames }]); // Filter the frame
   let filtFrame = filtResult[0].frames[0];
   let enc = beamcoder.encoder({ // Create an encoder for JPEG data
     name : 'mjpeg', // FFmpeg does not have an encoder called 'jpeg'
