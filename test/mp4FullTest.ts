@@ -1,5 +1,5 @@
 import test from 'tape';
-import beamcoder from '..';
+import { makeSources, makeStreams } from '..';
 import md5File from 'md5-file';
 
 test('recompress mp4', async t => {
@@ -60,8 +60,8 @@ test('recompress mp4', async t => {
       }
     };
 
-    await beamcoder.makeSources(params);
-    const beamStreams = await beamcoder.makeStreams(params);
+    await makeSources(params);
+    const beamStreams = await makeStreams(params);
 
     await beamStreams.run();
 
