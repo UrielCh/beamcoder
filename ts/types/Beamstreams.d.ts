@@ -60,7 +60,10 @@ export interface BeamstreamSource {
 	ms?: { start: number, end: number }
 	streamIndex?: number
 	iformat?: InputFormat
-  options?: { [key: string]: any }
+    options?: { [key: string]: any }
+
+	format?: Demuxer; // filled by makeSources
+	stream?: Readable; // filled by makeSources
 }
 /** Codec definition for the destination channel */
 export interface BeamstreamStream {
