@@ -2,29 +2,6 @@ import { Demuxer, DemuxerCreateOptions } from "./Demuxer"
 import { Muxer, MuxerCreateOptions } from "./Muxer"
 import { InputFormat } from "./FormatContext"
 
-/**
- * WritableDemuxerStream is not a Writable Class augmented by a demuxer function, should be replace by a new class
- * A [Node.js Writable stream](https://nodejs.org/docs/latest-v12.x/api/stream.html#stream_writable_streams)
- * allowing source data to be streamed to the demuxer from a file or other stream source such as a network connection
- */
- export type WritableDemuxerStream = Writable & {
-	/**
-	 * Create a demuxer for this source
-	 * @param options a DemuxerCreateOptions object
-     * @returns a promise that resolves to a Demuxer when it has determined sufficient
-	 * format details by consuming data from the source. The promise will wait indefinitely 
-	 * until sufficient source data has been read.
-	 */
-	 demuxer: (options?: { iformat?: InputFormat, options?: { [key: string]: any }, governor?: Governor }) => Promise<Demuxer>
-};
-
-/**
- * Create a WritableDemuxerStream to allow streaming to a Demuxer
- * @param options.highwaterMark Buffer level when `stream.write()` starts returng false.
- * @returns A WritableDemuxerStream that can be streamed to.
- */
-export function demuxerStream(params: { highwaterMark?: number }): WritableDemuxerStream
-
 /** Source definition for a beamstream channel, from either a file or NodeJS ReadableStream */
 export interface BeamstreamSource {
 	url?: string

@@ -24,6 +24,7 @@
 import beamcoder from './beamcoder'
 import { BeamstreamParams, BeamstreamSource, Demuxer } from './types';
 import readStream from './readStream';
+import DemuxerStream from './DemuxerStream';
 
 export default async function makeSources(params: BeamstreamParams): Promise<void> {
   if (!params.video) params.video = [];
@@ -37,7 +38,7 @@ export default async function makeSources(params: BeamstreamParams): Promise<voi
   const promises = sources.map((src: BeamstreamSource) => {
     let p: Promise<Demuxer>;
     if (src.input_stream) {
-      const demuxerStream = beamcoder.demuxerStream({ highwaterMark: 1024 });
+      const demuxerStream = new DemuxerStream({ highwaterMark: 1024 });
       src.input_stream.pipe(demuxerStream);
       p = demuxerStream.demuxer({ iformat: src.iformat, options: src.options });
     } else {

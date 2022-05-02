@@ -33,7 +33,7 @@ import { governor, Muxer, MuxerCreateOptions } from './types';
  * @returns A ReadableMuxerStream that can be streamed from.
  */
 export default class MuxerStream extends Readable {
-  governor = new beamcoder.governor({ highWaterMark: 1 });
+  private governor = new beamcoder.governor({ highWaterMark: 1 });
   constructor(params: { highwaterMark: number }) {
     super({
       highWaterMark: params.highwaterMark || 16384,

@@ -21,8 +21,12 @@
 
 import beamcoder from './beamcoder';
 
-import { default as demuxerStream } from './demuxerStream';
-export { default as MuxerStream } from './MuxerStream';
+export { default as demuxerStream } from './DemuxerStream';
+export { default as muxerStream } from './MuxerStream';
+
+import { default as demuxerStream } from './DemuxerStream';
+import { default as muxerStream } from './MuxerStream';
+
 import { default as makeSources } from './makeSources';
 import { default as makeStreams } from './makeStreams';
 
@@ -39,7 +43,8 @@ https://github.com/Streampunk/beamcoder/blob/master/LICENSE`;
 console.log(splash);
 console.log('Using FFmpeg version', beamcoder.avVersionInfo());
 
-beamcoder.demuxerStream = demuxerStream;
+(beamcoder as any).demuxerStream = demuxerStream;
+(beamcoder as any).muxerStream = muxerStream;
 beamcoder.makeSources = makeSources;
 beamcoder.makeStreams = makeStreams;
 
