@@ -21,11 +21,11 @@
 
 import beamcoder from './beamcoder';
 
-export { default as demuxerStream } from './DemuxerStreamCls';
-export { default as muxerStream } from './MuxerStreamCls';
+export { default as demuxerStream } from './DemuxerStream';
+export { default as muxerStream } from './MuxerStream';
 
-export { default as DemuxerStream } from './DemuxerStreamCls';
-export { default as MuxerStream } from './MuxerStreamCls';
+export { default as DemuxerStream } from './DemuxerStream';
+export { default as MuxerStream } from './MuxerStream';
 
 export { default as makeSources } from './makeSources';
 export { default as makeStreams } from './makeStreams';

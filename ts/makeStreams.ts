@@ -23,7 +23,7 @@ import beamcoder from './beamcoder'
 import { BeamstreamChannel, BeamstreamParams, BeamstreamSource, BeamstreamStream, Filterer, FilterLink, Muxer } from './types';
 import serialBalancer from './serialBalancer';
 import runStreams from './runStreams';
-import MuxerStream from './MuxerStreamCls';
+import MuxerStream from './MuxerStream';
 
 /**
  * Initialise the output streams for the beamstream process.
