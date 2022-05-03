@@ -24,7 +24,7 @@
 import beamcoder from './beamcoder'
 import { BeamstreamParams, BeamstreamSource, Demuxer } from './types';
 import readStream from './readStream';
-import DemuxerStream from './DemuxerStream';
+import DemuxerStream from './DemuxerStreamCls';
 
 /**
  * Initialise the sources for the beamstream process.
