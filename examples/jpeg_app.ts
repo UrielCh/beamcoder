@@ -53,26 +53,32 @@ app.use(async (ctx) => { // Assume HTTP GET with path /<file_name>/<time_in_s>
     return; // Ignore favicon etc..
   }
 
-  if ((parts.length < 3) || (isNaN(+parts[2]))) return; // Ignore favicon etc..
-  let demuxer = await beamcoder.demuxer('file:' + parts[1]); // Probe the file
-  await demuxer.seek({ time: +parts[2] }); // Seek to the closest keyframe to time
-  let packet = await demuxer.read(); // Find the next video packet (assumes stream 0)
-  for ( ; packet.stream_index !== 0 ; packet = await demuxer.read() );
-  let dec = beamcoder.decoder({ demuxer, stream_index: 0 }); // Create a decoder
-  let decResult = await dec.decode(packet); // Decode the frame
-  if (decResult.frames.length === 0) // Frame may be buffered, so flush it out
-    decResult = await dec.flush();
-  // Filtering could be used to transform the picture here, e.g. scaling
-  let enc = beamcoder.encoder({ // Create an encoder for JPEG data
-    name : 'mjpeg', // FFmpeg does not have an encoder called 'jpeg'
-    width : dec.width,
-    height: dec.height,
-    pix_fmt: dec.pix_fmt.indexOf('422') >= 0 ? 'yuvj422p' : 'yuvj420p',
-    time_base: [1, 1] });
-  let jpegResult = await enc.encode(decResult.frames[0]); // Encode the frame
-  await enc.flush(); // Tidy the encoder
-  ctx.type = 'image/jpeg'; // Set the Content-Type of the data
-  ctx.body = jpegResult.packets[0].data; // Return the JPEG image data
+  try {
+    if ((parts.length < 3) || (isNaN(+parts[2]))) return; // Ignore favicon etc..
+    let demuxer = await beamcoder.demuxer('file:' + parts[1]); // Probe the file
+    await demuxer.seek({ time: +parts[2] }); // Seek to the closest keyframe to time
+    let packet = await demuxer.read(); // Find the next video packet (assumes stream 0)
+    for ( ; packet.stream_index !== 0 ; packet = await demuxer.read() );
+    let dec = beamcoder.decoder({ demuxer, stream_index: 0 }); // Create a decoder
+    let decResult = await dec.decode(packet); // Decode the frame
+    if (decResult.frames.length === 0) // Frame may be buffered, so flush it out
+      decResult = await dec.flush();
+    // Filtering could be used to transform the picture here, e.g. scaling
+    let enc = beamcoder.encoder({ // Create an encoder for JPEG data
+      name : 'mjpeg', // FFmpeg does not have an encoder called 'jpeg'
+      width : dec.width,
+      height: dec.height,
+      pix_fmt: dec.pix_fmt.indexOf('422') >= 0 ? 'yuvj422p' : 'yuvj420p',
+      time_base: [1, 1] });
+    let jpegResult = await enc.encode(decResult.frames[0]); // Encode the frame
+    await enc.flush(); // Tidy the encoder
+    ctx.type = 'image/jpeg'; // Set the Content-Type of the data
+    ctx.body = jpegResult.packets[0].data; // Return the JPEG image data
+  } catch (e) {
+    ctx.type = 'application/json';
+    ctx.status = 500;
+    ctx.body = JSON.stringify(e);
+  }
 });
 
 app.listen(3000); // Start the server on port 3000

@@ -76,7 +76,7 @@ async function run() {
 
     let linesize = frame.linesize;
     let [ ydata, bdata, cdata ] = frame.data;
-    frame.pts = i+100;
+    frame.pts = i + 100;
 
     for ( let y = 0 ; y < frame.height ; y++ ) {
       for ( let x = 0 ; x < linesize[0] ; x++ ) {
