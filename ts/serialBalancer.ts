@@ -41,7 +41,7 @@ export default class serialBalancer {
 
   private pullPkts(pkt: null | Packet, streamIndex: number, ts: number): Promise<void | Packet> {
     return new Promise(resolve => {
-      Object.assign(this.pending[streamIndex], { pkt: pkt, ts: ts, resolve: resolve });
+      Object.assign(this.pending[streamIndex], { pkt, ts, resolve });
       const minTS = this.pending.reduce((acc, pend) => Math.min(acc, pend.ts), Number.MAX_VALUE);
       // console.log(streamIndex, pending.map(p => p.ts), minTS);
       const nextPend = this.pending.find(pend => pend.pkt && (pend.ts === minTS));
@@ -51,20 +51,21 @@ export default class serialBalancer {
   };
 
   public async writePkts(
-      packets: EncodedPackets | null,
-      srcStream: Stream,
-      dstStream: Stream,
-      writeFn: (r: Packet) => Promise<void>,
-      final = false): Promise<void | Packet> {
-      if (packets && packets.packets.length) {
-        for (const pkt of packets.packets) {
-          pkt.stream_index = dstStream.index;
-          this.adjustTS(pkt, srcStream.time_base, dstStream.time_base);
-          const pktTS = pkt.pts * dstStream.time_base[0] / dstStream.time_base[1];
-          const packet = await this.pullPkts(pkt, dstStream.index, pktTS) as Packet;
-          await writeFn(packet);
-        }
-      } else if (final)
-        return this.pullPkts(null, dstStream.index, Number.MAX_VALUE);
-    };
-  }
+    packets: EncodedPackets | null,
+    srcStream: Stream,
+    dstStream: Stream,
+    writeFn: (r: Packet) => Promise<void>,
+    final = false
+  ): Promise<void | Packet> {
+    if (packets && packets.packets.length) {
+      for (const pkt of packets.packets) {
+        pkt.stream_index = dstStream.index;
+        this.adjustTS(pkt, srcStream.time_base, dstStream.time_base);
+        const pktTS = pkt.pts * dstStream.time_base[0] / dstStream.time_base[1];
+        const packet = await this.pullPkts(pkt, dstStream.index, pktTS);
+        await writeFn(packet as Packet);
+      }
+    } else if (final)
+      return this.pullPkts(null, dstStream.index, Number.MAX_VALUE);
+  };
+}
