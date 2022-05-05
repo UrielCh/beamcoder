@@ -25,12 +25,12 @@ import fs from 'fs';
 
 async function run() {
   // let demuxer = await createDemuxer('../../media/dpp/AS11_DPP_HD_EXAMPLE_1.mxf');
+  // http://ftp.kw.bbc.co.uk/dppdownload/dpp_example_files/AS11_DPP_HD_EXAMPLE_1.mxf
   let demuxerStream = new DemuxerStream({ highwaterMark: 65536 });
   fs.createReadStream('../../media/dpp/AS11_DPP_HD_EXAMPLE_1.mxf').pipe(demuxerStream);
   let demuxer = await demuxerStream.demuxer({});
   // console.log(demuxer);
-
-  let decoder = await beamcoder.decoder({ name: 'h264' });
+  let decoder = beamcoder.decoder({ name: 'h264' });
   // console.log(decoder);
 
   const vidStream = demuxer.streams[0];
@@ -120,7 +120,7 @@ async function run() {
   }
   let frames = await decoder.flush();
   console.log('flush', frames.total_time, frames.frames.length);
-
+  
   demuxerStream.destroy();
 }
 
