@@ -54,11 +54,11 @@ app.use(async (ctx) => { // Assume HTTP GET with path /<file_name>/<time_in_s>
   }
 
   if ((parts.length < 3) || (isNaN(+parts[2]))) return; // Ignore favicon etc..
-  let dm = await beamcoder.demuxer('file:' + parts[1]); // Probe the file
-  await dm.seek({ time: +parts[2] }); // Seek to the closest keyframe to time
-  let packet = await dm.read(); // Find the next video packet (assumes stream 0)
-  for ( ; packet.stream_index !== 0 ; packet = await dm.read() );
-  let dec = beamcoder.decoder({ demuxer: dm, stream_index: 0 }); // Create a decoder
+  let demuxer = await beamcoder.demuxer('file:' + parts[1]); // Probe the file
+  await demuxer.seek({ time: +parts[2] }); // Seek to the closest keyframe to time
+  let packet = await demuxer.read(); // Find the next video packet (assumes stream 0)
+  for ( ; packet.stream_index !== 0 ; packet = await demuxer.read() );
+  let dec = beamcoder.decoder({ demuxer, stream_index: 0 }); // Create a decoder
   let decResult = await dec.decode(packet); // Decode the frame
   if (decResult.frames.length === 0) // Frame may be buffered, so flush it out
     decResult = await dec.flush();
