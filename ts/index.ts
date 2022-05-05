@@ -30,6 +30,7 @@ export { default as MuxerStream } from './MuxerStream';
 export { default as makeSources } from './makeSources';
 export { default as makeStreams } from './makeStreams';
 
+export { getRaw, getHTML } from './utils';
 
 // Provide useful debug on segfault-related crash
 import SegfaultHandler from 'segfault-handler';

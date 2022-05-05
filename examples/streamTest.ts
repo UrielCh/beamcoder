@@ -1,19 +1,40 @@
 import beamcoder, { demuxerStream } from '..'; // Use require('beamcoder') externally
 import path from 'path';
 import fs from 'fs';
-import { Demuxer } from '../ts/types/Demuxer';
+import { Demuxer, getRaw } from '..';
 
+const streamUrl = 'https://github.com/awslabs/amazon-kinesis-video-streams-producer-c/raw/master/samples/h264SampleFrames/';
 async function getFiles(): Promise<string[]> {
-    // https://github.com/awslabs/amazon-kinesis-video-streams-producer-c/raw/master/samples/h264SampleFrames/frame-001.h264
     const src = path.join(__dirname, 'capture', 'h264SampleFrames');
-    const filelist = await fs.promises.readdir(src);
+    if (!fs.existsSync(src)) {
+        fs.mkdirSync(src, { recursive: true });
+    }
+    let filelist = (await fs.promises.readdir(src)).filter(f => f.endsWith('.h264'));
+    if (filelist.length < 403) {
+        for (let i = 1; i < 404; i++) {
+            const fn = `frame-${i.toFixed().padStart(3, '0')}.h264`;
+            const url = `${streamUrl}${fn}`;
+            const dest = path.join(src, fn)
+            if (!fs.existsSync(dest)) {
+                let ws = fs.createWriteStream(dest);
+                await getRaw(ws, url).catch(async (err) => {
+                    if (err.name === 'RedirectError') {
+                      const redirectURL = err.message;
+                      await getRaw(ws, redirectURL,fn);
+                    } else throw err;
+                  });
+            ;
+            }
+        }
+        filelist = (await fs.promises.readdir(src)).filter(f => f.endsWith('.h264'));
+    }
     filelist.sort();
     return filelist.map(f => path.join(src, f));
 }
 
 async function run() {
+    const filelist = await getFiles();
     const stream = new demuxerStream({ highwaterMark: 3600 });
-
     const demuxPromise = stream.demuxer({})
     demuxPromise.then(async (demuxer: Demuxer) => {
         const packet = await demuxer.read();
@@ -36,7 +57,6 @@ async function run() {
         demuxer.forceClose();
     });
     // https://github.com/awslabs/amazon-kinesis-video-streams-producer-c/raw/master/samples/h264SampleFrames/frame-001.h264
-    const filelist = await getFiles();
     for (const fullname of filelist) {
         const buf = await fs.promises.readFile(fullname);
         stream.write(buf);
@@ -46,4 +66,4 @@ async function run() {
     console.log('end resolved');;
 }
 
-run();
+run().catch(e => console.error(e));
