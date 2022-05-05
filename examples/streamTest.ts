@@ -11,21 +11,23 @@ async function getFiles(): Promise<string[]> {
         fs.mkdirSync(src, { recursive: true });
     }
     let filelist = (await fs.promises.readdir(src)).filter(f => f.endsWith('.h264'));
+    const toto: Promise<void>[] = [];
     if (filelist.length < 403) {
         for (let i = 1; i < 404; i++) {
             const fn = `frame-${i.toFixed().padStart(3, '0')}.h264`;
             const url = `${streamUrl}${fn}`;
-            const dest = path.join(src, fn)            
+            const dest = path.join(src, fn)
             if (!fs.existsSync(dest)) {
                 let ws = fs.createWriteStream(dest);
-                await getRaw(ws, url).catch(async (err) => {
+                toto.push(getRaw(ws, url).catch(async (err) => {
                     if (err.name === 'RedirectError') {
-                      const redirectURL = err.message;
-                      await getRaw(ws, redirectURL,fn);
+                        const redirectURL = err.message;
+                        await getRaw(ws, redirectURL, fn);
                     } else throw err;
-                  });
+                }))
             }
         }
+        await Promise.all(toto);
         filelist = (await fs.promises.readdir(src)).filter(f => f.endsWith('.h264'));
     }
     filelist.sort();
@@ -55,9 +57,10 @@ async function run() {
         const jpgDest = 'capture.jpg';
         fs.writeFileSync(jpgDest, jpegResult.packets[0].data);
         const sumDest = await md5File(jpgDest);
-        const expectedMd5 = '63a5031f882ad85a964441f61333240c';
-        if (expectedMd5 !== sumDest) {
-            console.error(`MD5 missmatch ! get ${sumDest} expect ${expectedMd5}`)
+        const expectedMd5Mac = '63a5031f882ad85a964441f61333240c';
+        const expectedMd5PC = 'e16f49626e71b4be46a3211ed1d4e471';
+        if (expectedMd5Mac !== sumDest && expectedMd5PC !== sumDest) {
+            console.error(`MD5 missmatch get ${sumDest}`)
         }
         console.log(`saving in stream img as ${jpgDest}`);
         demuxer.forceClose();
