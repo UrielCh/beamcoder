@@ -79,3 +79,4 @@ ts/*.js
 examples/pnpm-lock.yaml
 examples/capture/
 *.torrent
+capture.jpg

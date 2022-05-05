@@ -2,6 +2,7 @@ import beamcoder, { demuxerStream } from '..'; // Use require('beamcoder') exter
 import path from 'path';
 import fs from 'fs';
 import { Demuxer, getRaw } from '..';
+import md5File from 'md5-file';
 
 const streamUrl = 'https://github.com/awslabs/amazon-kinesis-video-streams-producer-c/raw/master/samples/h264SampleFrames/';
 async function getFiles(): Promise<string[]> {
@@ -14,7 +15,7 @@ async function getFiles(): Promise<string[]> {
         for (let i = 1; i < 404; i++) {
             const fn = `frame-${i.toFixed().padStart(3, '0')}.h264`;
             const url = `${streamUrl}${fn}`;
-            const dest = path.join(src, fn)
+            const dest = path.join(src, fn)            
             if (!fs.existsSync(dest)) {
                 let ws = fs.createWriteStream(dest);
                 await getRaw(ws, url).catch(async (err) => {
@@ -23,7 +24,6 @@ async function getFiles(): Promise<string[]> {
                       await getRaw(ws, redirectURL,fn);
                     } else throw err;
                   });
-            ;
             }
         }
         filelist = (await fs.promises.readdir(src)).filter(f => f.endsWith('.h264'));
@@ -52,8 +52,14 @@ async function run() {
         });
         let jpegResult = await enc.encode(decResult.frames[0]); // Encode the frame
         await enc.flush(); // Tidy the encoder
-        fs.writeFileSync('capture.jpg', jpegResult.packets[0].data);
-        console.log(demuxer.streams.length);
+        const jpgDest = 'capture.jpg';
+        fs.writeFileSync(jpgDest, jpegResult.packets[0].data);
+        const sumDest = await md5File(jpgDest);
+        const expectedMd5 = '63a5031f882ad85a964441f61333240c';
+        if (expectedMd5 !== sumDest) {
+            console.error(`MD5 missmatch ! get ${sumDest} expect ${expectedMd5}`)
+        }
+        console.log(`saving in stream img as ${jpgDest}`);
         demuxer.forceClose();
     });
     // https://github.com/awslabs/amazon-kinesis-video-streams-producer-c/raw/master/samples/h264SampleFrames/frame-001.h264
@@ -61,9 +67,7 @@ async function run() {
         const buf = await fs.promises.readFile(fullname);
         stream.write(buf);
     }
-    console.log('all frame pushed')
-    stream.emit('finish')
-    console.log('end resolved');;
+    stream.emit('finish');
 }
 
 run().catch(e => console.error(e));
