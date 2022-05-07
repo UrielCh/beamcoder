@@ -56,5 +56,9 @@
     "typescript": "^4.6.4",
     "webtorrent": "^1.8.16"
   },
-  "gypfile": true
+  "gypfile": true,
+  "files": [
+    "src",
+    "ts"
+  ]
 }
