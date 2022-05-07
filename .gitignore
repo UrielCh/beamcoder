@@ -72,11 +72,11 @@ ffmpeg/
 
 # Editors and IDE's
 *.swp
-.vscode/
-scratch/wibble.h264
-ts/*.d.ts
 ts/*.js
+ts/*.d.ts
 examples/pnpm-lock.yaml
 examples/capture/
 *.torrent
-capture.jpg
+*.jpg
+scratch/*.h264
+scratch/*.wav
